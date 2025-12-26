@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { getVerifySessionDocument } from "@/lib/db/queries/verify";
+import { getDocumentPdfData } from "@/lib/db/queries/documents";
+import { getDocumentPdfBytes } from "@/lib/db/queries/documentPdfs";
+import { readPdfFromLocalStorage } from "@/lib/pdf/render";
 
 export const runtime = "nodejs";
 
@@ -44,24 +47,21 @@ export async function GET(
     return jsonError(401, "Yetkisiz.");
   }
 
-  // Reuse the existing authenticated endpoint implementation by proxying it isn't possible server-side,
-  // so we redirect to a signed-less internal fetch is not desired.
-  // Instead, we serve the PDF file directly from storage just like the existing endpoint.
-  // This file path must match how PDFs are stored in generate route: storage/pdfs/<id>.pdf
-
-  const fs = await import("fs/promises");
-  const path = await import("path");
-
-  const filePath = path.join(process.cwd(), "storage", "pdfs", `${id}.pdf`);
-
-  let pdf: Buffer;
-  try {
-    pdf = await fs.readFile(filePath);
-  } catch {
+  const doc = await getDocumentPdfData(id);
+  if (!doc || !doc.pdf_hash || !doc.pdf_url) {
     return jsonError(404, "PDF bulunamadı.");
   }
 
-  const body = new Uint8Array(pdf);
+  const pdfBytes =
+    doc.pdf_storage_type === "db"
+      ? (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes
+      : await readPdfFromLocalStorage({ documentId: id }).catch(() => null);
+
+  if (!pdfBytes) {
+    return jsonError(404, "PDF bulunamadı.");
+  }
+
+  const body = new Uint8Array(pdfBytes);
 
   const headers = new Headers();
   headers.set("Content-Type", "application/pdf");

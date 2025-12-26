@@ -16,6 +16,7 @@ import {
 import { buildVerificationPath, buildVerificationUrl } from "@/lib/pdf/tokens";
 import { renderDefaultTemplateHtml } from "@/components/documents/DocumentPreview/templates/DefaultTemplate";
 import { getTemplateDetails } from "@/lib/db/queries/templates";
+import { upsertDocumentPdf } from "@/lib/db/queries/documentPdfs";
 
 export const runtime = "nodejs";
 
@@ -179,14 +180,21 @@ export async function POST(
     const pdfBuffer = await renderHtmlToPdfBuffer({ html });
     const pdfHash = sha256Hex(pdfBuffer);
 
-    await writePdfToLocalStorage({ documentId: id, pdfBuffer });
+    // Serverless deployments (Vercel) can't rely on local filesystem persistence.
+    // Persist the PDF bytes in Postgres.
+    const isVercel = process.env.VERCEL === "1";
+    if (isVercel) {
+      await upsertDocumentPdf({ documentId: id, pdfBytes: pdfBuffer, pdfHash });
+    } else {
+      await writePdfToLocalStorage({ documentId: id, pdfBuffer });
+    }
 
     const meta = getRequestMeta(request);
     const pdfUrl = `/api/documents/${id}/pdf`;
 
     const updated = await updateDocumentPdfInfo({
       documentId: id,
-      storageType: "local",
+      storageType: isVercel ? "db" : "local",
       pdfUrl,
       pdfHash,
       userId,

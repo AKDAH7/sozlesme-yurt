@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import fs from "fs/promises";
+import os from "os";
 import path from "path";
 
 import puppeteer from "puppeteer";
@@ -18,10 +19,24 @@ export async function renderHtmlToPdfBuffer(params: {
     bottom: 20,
     left: 20,
   };
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  const isVercel = process.env.VERCEL === "1";
+
+  const browser = isVercel
+    ? await (async () => {
+        const chromium = (await import("@sparticuz/chromium")).default;
+        const puppeteerCore = (await import("puppeteer-core")).default;
+
+        return puppeteerCore.launch({
+          headless: true,
+          executablePath: await chromium.executablePath(),
+          args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
+          defaultViewport: { width: 1280, height: 720 },
+        });
+      })()
+    : await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
   try {
     const page = await browser.newPage();
     await page.setContent(params.html, { waitUntil: "networkidle0" });
@@ -41,11 +56,19 @@ export async function renderHtmlToPdfBuffer(params: {
   }
 }
 
+function getLocalPdfDir(): string {
+  // On Vercel, the project directory is read-only; only /tmp is writable.
+  if (process.env.VERCEL === "1") {
+    return path.join(os.tmpdir(), "sozlesme-yurt", "pdfs");
+  }
+  return path.join(process.cwd(), "storage", "pdfs");
+}
+
 export async function writePdfToLocalStorage(params: {
   documentId: string;
   pdfBuffer: Buffer;
 }): Promise<{ filePath: string }> {
-  const dir = path.join(process.cwd(), "storage", "pdfs");
+  const dir = getLocalPdfDir();
   await fs.mkdir(dir, { recursive: true });
 
   const filePath = path.join(dir, `${params.documentId}.pdf`);
@@ -56,11 +79,6 @@ export async function writePdfToLocalStorage(params: {
 export async function readPdfFromLocalStorage(params: {
   documentId: string;
 }): Promise<Buffer> {
-  const filePath = path.join(
-    process.cwd(),
-    "storage",
-    "pdfs",
-    `${params.documentId}.pdf`
-  );
+  const filePath = path.join(getLocalPdfDir(), `${params.documentId}.pdf`);
   return fs.readFile(filePath);
 }

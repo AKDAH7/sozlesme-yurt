@@ -1,6 +1,7 @@
 import { requirePermission } from "@/lib/auth/permissions";
 import { getDocumentPdfData } from "@/lib/db/queries/documents";
 import { readPdfFromLocalStorage } from "@/lib/pdf/render";
+import { getDocumentPdfBytes } from "@/lib/db/queries/documentPdfs";
 import { insertDocumentAuditLog } from "@/lib/security/audit";
 import type { AuditActionType } from "@/types/db";
 
@@ -38,8 +39,19 @@ export async function GET(
     const url = new URL(request.url);
     const download = url.searchParams.get("download") === "1";
 
-    const pdf = await readPdfFromLocalStorage({ documentId: id });
-    const body = new Uint8Array(pdf);
+    const pdfBytes =
+      doc.pdf_storage_type === "db"
+        ? (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes
+        : await readPdfFromLocalStorage({ documentId: id });
+
+    if (!pdfBytes) {
+      return Response.json(
+        { ok: false, error: "PDF not found" },
+        { status: 404 }
+      );
+    }
+
+    const body = new Uint8Array(pdfBytes);
 
     const meta = getRequestMeta(request);
     await insertDocumentAuditLog({

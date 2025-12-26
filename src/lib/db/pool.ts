@@ -16,7 +16,10 @@ function shouldUseSsl(databaseUrl: string): boolean {
 export function getPool(): Pool {
   if (global.__pgPool) return global.__pgPool;
 
-  const raw = typeof process.env.DATABASE_URL === "string" ? process.env.DATABASE_URL : "";
+  const raw =
+    typeof process.env.DATABASE_URL === "string"
+      ? process.env.DATABASE_URL
+      : "";
   const trimmed = raw.trim();
   const connectionString =
     (trimmed.startsWith("'") && trimmed.endsWith("'")) ||

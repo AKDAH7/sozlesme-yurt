@@ -19,6 +19,10 @@ export type CreateDocumentValidated = {
 
   priceAmount: number;
   priceCurrency: string;
+
+  templateId: string | null;
+  templateVersion: number | null;
+  templateValues: Record<string, unknown> | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -192,6 +196,26 @@ export function validateCreateDocumentBody(
     });
   }
 
+  const templateIdRaw =
+    typeof body.template_id === "string" ? body.template_id.trim() : "";
+  const templateId = templateIdRaw ? templateIdRaw : null;
+
+  const templateVersionRaw = (body as Record<string, unknown>).template_version;
+  const templateVersion =
+    typeof templateVersionRaw === "number" &&
+    Number.isFinite(templateVersionRaw)
+      ? Math.max(1, Math.floor(templateVersionRaw))
+      : null;
+
+  const templateValuesRaw = (body as Record<string, unknown>).template_values;
+  const templateValues = isRecord(templateValuesRaw) ? templateValuesRaw : null;
+
+  if (templateId && templateValues === null) {
+    throw Object.assign(new Error("template_values must be an object"), {
+      status: 400,
+    });
+  }
+
   return {
     ownerFullName,
     ownerIdentityNo,
@@ -207,5 +231,9 @@ export function validateCreateDocumentBody(
     directCustomerPhone,
     priceAmount,
     priceCurrency,
+
+    templateId,
+    templateVersion,
+    templateValues,
   };
 }

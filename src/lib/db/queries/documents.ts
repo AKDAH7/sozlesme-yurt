@@ -40,6 +40,10 @@ export type DocumentRow = {
   pdf_url: string | null;
   pdf_hash: string | null;
 
+  template_id: string | null;
+  template_version: number | null;
+  template_values: Record<string, unknown> | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -86,6 +90,10 @@ export type DocumentPdfData = {
   pdf_storage_type: PdfStorageType;
   pdf_url: string | null;
   pdf_hash: string | null;
+
+  template_id: string | null;
+  template_version: number | null;
+  template_values: Record<string, unknown> | null;
 };
 
 export type TrackingHistoryRow = {
@@ -140,6 +148,10 @@ export type CreateDocumentInput = {
 
   priceAmount: number;
   priceCurrency: string;
+
+  templateId: string | null;
+  templateVersion: number | null;
+  templateValues: Record<string, unknown> | null;
 };
 
 export type CreateDocumentGenerated = {
@@ -228,7 +240,8 @@ export async function createDocument(params: {
 						owner_full_name, owner_identity_no, owner_birth_date,
 						university_name, dorm_name, dorm_address, issue_date, footer_datetime,
 						requester_type, company_id, direct_customer_name, direct_customer_phone,
-						price_amount, price_currency
+						price_amount, price_currency,
+						template_id, template_version, template_values
 					)
 					VALUES (
 						$1, $2, $3,
@@ -236,7 +249,8 @@ export async function createDocument(params: {
 						$5, $6, $7,
 						$8, $9, $10, $11, $12,
 						$13, $14, $15, $16,
-						$17, $18
+						$17, $18,
+						$19, $20, $21::jsonb
 					)
 					RETURNING id, token, barcode_id, reference_no, created_at`,
         [
@@ -258,6 +272,11 @@ export async function createDocument(params: {
           params.input.directCustomerPhone,
           params.input.priceAmount,
           params.input.priceCurrency,
+          params.input.templateId,
+          params.input.templateVersion,
+          params.input.templateValues
+            ? JSON.stringify(params.input.templateValues)
+            : null,
         ]
       );
 
@@ -312,6 +331,9 @@ export async function getDocumentById(id: string): Promise<DocumentRow | null> {
 			requester_type, company_id, direct_customer_name, direct_customer_phone,
 			price_amount::text as price_amount, price_currency, payment_status,
 			pdf_storage_type, pdf_url, pdf_hash,
+      template_id,
+      template_version,
+      template_values,
       created_at::text as created_at, updated_at::text as updated_at,
       issue_date::text as issue_date,
       footer_datetime::text as footer_datetime
@@ -348,7 +370,10 @@ export async function getDocumentPdfData(
       d.price_currency,
       d.pdf_storage_type,
       d.pdf_url,
-      d.pdf_hash
+      d.pdf_hash,
+      d.template_id,
+      d.template_version,
+      d.template_values
      FROM documents d
      LEFT JOIN companies c ON c.id = d.company_id
      WHERE d.id = $1

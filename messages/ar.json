@@ -1,4 +1,90 @@
 {
+  "templates": {
+    "list": {
+      "title": "القوالب",
+      "total": "الإجمالي: {total}",
+      "create": "إنشاء قالب",
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "table": {
+        "name": "القالب",
+        "language": "اللغة",
+        "variables": "المتغيرات",
+        "status": "الحالة",
+        "empty": "لا توجد قوالب بعد."
+      },
+      "actions": {
+        "edit": "تعديل",
+        "preview": "معاينة",
+        "activate": "تفعيل",
+        "deactivate": "تعطيل",
+        "saving": "جارٍ الحفظ…"
+      },
+      "errors": {
+        "toggleFailed": "تعذر تغيير الحالة."
+      }
+    },
+    "form": {
+      "create": {
+        "title": "إنشاء قالب",
+        "subtitle": "عرّف HTML + المتغيرات (placeholders)."
+      },
+      "edit": {
+        "title": "تعديل القالب",
+        "subtitle": "الحفظ ينشئ إصدارًا جديدًا (الحالي: v{version}).",
+        "notFound": "القالب غير موجود."
+      },
+      "fields": {
+        "name": "الاسم",
+        "description": "الوصف",
+        "language": "اللغة",
+        "active": "نشط",
+        "html": "محتوى HTML",
+        "variables": "المتغيرات"
+      },
+      "placeholders": {
+        "name": "مثال: خطاب السكن",
+        "description": "اختياري",
+        "html": "استخدم placeholders مثل {{owner_full_name}}"
+      },
+      "hints": {
+        "variables": "تُستخدم المفاتيح داخل {{key}}.",
+        "systemVariables": "عناصر النظام: {{stamp_data_url}}, {{qr_data_url}}, {{barcode_data_url}}, {{verification_url}}, {{verification_path}}."
+      },
+      "vars": {
+        "key": "المفتاح",
+        "label": "التسمية",
+        "labelTr": "التسمية (TR)",
+        "labelEn": "التسمية (EN)",
+        "labelAr": "التسمية (AR)",
+        "preset": "يُملأ تلقائيًا",
+        "presetPlaceholder": "اختياري",
+        "type": "النوع",
+        "required": "مطلوب"
+      },
+      "actions": {
+        "addVariable": "إضافة متغير",
+        "remove": "إزالة",
+        "create": "إنشاء",
+        "update": "حفظ (إصدار جديد)",
+        "saving": "جارٍ الحفظ…"
+      },
+      "errors": {
+        "nameRequired": "الاسم مطلوب.",
+        "htmlRequired": "محتوى HTML مطلوب.",
+        "variablesRequired": "مطلوب متغير صالح واحد على الأقل.",
+        "saveFailed": "تعذر حفظ القالب."
+      }
+    },
+    "preview": {
+      "title": "معاينة القالب",
+      "subtitle": "{name} (v{version})",
+      "backToEdit": "العودة للتعديل",
+      "notFound": "القالب غير موجود."
+    }
+  },
   "app": {
     "controlPanel": "لوحة التحكم",
     "documentIssuance": "إصدار المستندات"
@@ -243,6 +329,8 @@
         "pricing": "التسعير"
       },
       "fields": {
+        "template": "القالب",
+        "templateDefault": "الافتراضي",
         "name": "الاسم",
         "idNumber": "رقم الهوية",
         "birthDate": "تاريخ الميلاد",
@@ -266,7 +354,8 @@
         "cancel": "إلغاء"
       },
       "errors": {
-        "createFailed": "فشل الإنشاء"
+        "createFailed": "فشل الإنشاء",
+        "templateLoadFailed": "تعذر تحميل القالب."
       }
     },
     "preview": {

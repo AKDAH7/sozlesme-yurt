@@ -15,8 +15,28 @@ import {
 } from "@/lib/pdf/render";
 import { buildVerificationPath, buildVerificationUrl } from "@/lib/pdf/tokens";
 import { renderDefaultTemplateHtml } from "@/components/documents/DocumentPreview/templates/DefaultTemplate";
+import { getTemplateDetails } from "@/lib/db/queries/templates";
 
 export const runtime = "nodejs";
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function replacePlaceholders(params: {
+  html: string;
+  values: Record<string, string>;
+}): string {
+  return params.html.replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (_m, key) => {
+    const value = params.values[key] ?? "";
+    return escapeHtml(value);
+  });
+}
 
 function getRequestMeta(request: Request): {
   ipAddress: string | null;
@@ -74,27 +94,87 @@ export async function POST(
 
     const priceLabel = `${doc.price_amount} ${doc.price_currency}`;
 
-    const html =
-      "<!doctype html>" +
-      renderDefaultTemplateHtml({
-        referenceNo: doc.reference_no,
-        barcodeId: doc.barcode_id,
-        ownerFullName: doc.owner_full_name,
-        ownerIdentityNo: doc.owner_identity_no,
-        ownerBirthDate: doc.owner_birth_date,
-        universityName: doc.university_name,
-        dormName: doc.dorm_name,
-        dormAddress: doc.dorm_address,
-        issueDate: doc.issue_date,
-        footerDatetime: new Date(doc.footer_datetime).toLocaleString(),
-        requesterLabel,
-        priceLabel,
-        verificationUrl,
-        verificationPath,
-        qrDataUrl,
-        barcodeDataUrl,
-        stampDataUrl,
+    let html: string;
+
+    if (doc.template_id && doc.template_version && doc.template_values) {
+      const tpl = await getTemplateDetails({
+        templateId: doc.template_id,
+        version: doc.template_version,
       });
+
+      if (!tpl) {
+        return Response.json(
+          {
+            ok: false,
+            errorCode: "templateNotFound",
+            error: "Template not found",
+          },
+          { status: 500 }
+        );
+      }
+
+      const baseValues: Record<string, unknown> = {
+        reference_no: doc.reference_no,
+        barcode_id: doc.barcode_id,
+        token: doc.token,
+        owner_full_name: doc.owner_full_name,
+        owner_identity_no: doc.owner_identity_no,
+        owner_birth_date: doc.owner_birth_date,
+        university_name: doc.university_name,
+        dorm_name: doc.dorm_name ?? "",
+        dorm_address: doc.dorm_address ?? "",
+        issue_date: doc.issue_date,
+        footer_datetime: new Date(doc.footer_datetime).toLocaleString(),
+        requester_label: requesterLabel,
+        price_label: priceLabel,
+        verification_url: verificationUrl,
+        verification_path: verificationPath,
+      };
+
+      const systemValues: Record<string, unknown> = {
+        stamp_data_url: stampDataUrl,
+        qr_data_url: qrDataUrl,
+        barcode_data_url: barcodeDataUrl,
+      };
+
+      const merged: Record<string, unknown> = {
+        ...baseValues,
+        ...(doc.template_values ?? {}),
+        ...systemValues,
+      };
+
+      const values: Record<string, string> = {};
+      for (const [k, v] of Object.entries(merged)) {
+        const s = v === null || typeof v === "undefined" ? "" : String(v);
+        values[k] = s;
+        values[k.toUpperCase()] = s;
+      }
+
+      const filled = replacePlaceholders({ html: tpl.html_content, values });
+      html = (filled.trim().startsWith("<!") ? "" : "<!doctype html>") + filled;
+    } else {
+      html =
+        "<!doctype html>" +
+        renderDefaultTemplateHtml({
+          referenceNo: doc.reference_no,
+          barcodeId: doc.barcode_id,
+          ownerFullName: doc.owner_full_name,
+          ownerIdentityNo: doc.owner_identity_no,
+          ownerBirthDate: doc.owner_birth_date,
+          universityName: doc.university_name,
+          dormName: doc.dorm_name,
+          dormAddress: doc.dorm_address,
+          issueDate: doc.issue_date,
+          footerDatetime: new Date(doc.footer_datetime).toLocaleString(),
+          requesterLabel,
+          priceLabel,
+          verificationUrl,
+          verificationPath,
+          qrDataUrl,
+          barcodeDataUrl,
+          stampDataUrl,
+        });
+    }
 
     const pdfBuffer = await renderHtmlToPdfBuffer({ html });
     const pdfHash = sha256Hex(pdfBuffer);

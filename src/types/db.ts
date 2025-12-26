@@ -20,3 +20,6 @@ export type AuditActionType =
   | "pdf_view"
   | "pdf_download"
   | "tracking_change";
+
+export type TemplateLanguage = "tr" | "en" | "ar" | "multi";
+export type TemplateVariableType = "text" | "date" | "number";

@@ -242,6 +242,8 @@
         "pricing": "Fiyatlandırma"
       },
       "fields": {
+        "template": "Şablon",
+        "templateDefault": "Varsayılan",
         "name": "Ad Soyad",
         "idNumber": "T.C. Kimlik No",
         "birthDate": "Doğum tarihi",
@@ -265,7 +267,8 @@
         "cancel": "Vazgeç"
       },
       "errors": {
-        "createFailed": "Oluşturma başarısız"
+        "createFailed": "Oluşturma başarısız",
+        "templateLoadFailed": "Şablon yüklenemedi."
       }
     },
     "preview": {
@@ -458,6 +461,92 @@
         "noValidFields": "Geçerli alan yok.",
         "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
       }
+    }
+  },
+  "templates": {
+    "list": {
+      "title": "Şablonlar",
+      "total": "Toplam: {total}",
+      "create": "Şablon oluştur",
+      "status": {
+        "active": "Aktif",
+        "inactive": "Pasif"
+      },
+      "table": {
+        "name": "Şablon",
+        "language": "Dil",
+        "variables": "Değişken",
+        "status": "Durum",
+        "empty": "Henüz şablon yok."
+      },
+      "actions": {
+        "edit": "Düzenle",
+        "preview": "Önizle",
+        "activate": "Aktifleştir",
+        "deactivate": "Pasifleştir",
+        "saving": "Kaydediliyor…"
+      },
+      "errors": {
+        "toggleFailed": "Durum değiştirilemedi."
+      }
+    },
+    "form": {
+      "create": {
+        "title": "Şablon oluştur",
+        "subtitle": "HTML + değişkenleri (placeholder) tanımlayın."
+      },
+      "edit": {
+        "title": "Şablonu düzenle",
+        "subtitle": "Kaydetmek yeni bir versiyon oluşturur (mevcut: v{version}).",
+        "notFound": "Şablon bulunamadı."
+      },
+      "fields": {
+        "name": "Ad",
+        "description": "Açıklama",
+        "language": "Dil",
+        "active": "Aktif",
+        "html": "HTML içeriği",
+        "variables": "Değişkenler"
+      },
+      "placeholders": {
+        "name": "Örn: Yurt yazısı",
+        "description": "Opsiyonel",
+        "html": "{{owner_full_name}} gibi placeholder kullanın"
+      },
+      "hints": {
+        "variables": "Anahtarlar {{key}} şeklinde kullanılır.",
+        "systemVariables": "Sistem placeholder'ları: {{stamp_data_url}}, {{qr_data_url}}, {{barcode_data_url}}, {{verification_url}}, {{verification_path}}."
+      },
+      "vars": {
+        "key": "Anahtar",
+        "label": "Etiket",
+        "labelTr": "Etiket (TR)",
+        "labelEn": "Etiket (EN)",
+        "labelAr": "Etiket (AR)",
+        "preset": "Otomatik doldur",
+        "presetPlaceholder": "Opsiyonel",
+        "type": "Tip",
+        "required": "Zorunlu"
+      },
+      "actions": {
+        "addVariable": "Değişken ekle",
+        "remove": "Sil",
+        "create": "Oluştur",
+        "update": "Kaydet (yeni versiyon)",
+        "saving": "Kaydediliyor…"
+      },
+      "errors": {
+        "nameRequired": "Ad zorunludur.",
+        "htmlRequired": "HTML içeriği zorunludur.",
+        "variablesRequired": "En az 1 geçerli değişken zorunludur.",
+        "saveFailed": "Şablon kaydedilemedi."
+      }
+    },
+    "preview": {
+      "title": "Şablon önizleme",
+      "subtitle": "{name} (v{version})",
+      "backToEdit": "Düzenlemeye dön",
+      "notFound": "Şablon bulunamadı."
     }
   },
   "reports": {

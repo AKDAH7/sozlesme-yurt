@@ -242,6 +242,8 @@
         "pricing": "Pricing"
       },
       "fields": {
+        "template": "Template",
+        "templateDefault": "Default",
         "name": "Name",
         "idNumber": "ID number",
         "birthDate": "Date of birth",
@@ -265,7 +267,8 @@
         "cancel": "Cancel"
       },
       "errors": {
-        "createFailed": "Create failed"
+        "createFailed": "Create failed",
+        "templateLoadFailed": "Failed to load template."
       }
     },
     "preview": {
@@ -458,6 +461,92 @@
         "noValidFields": "No valid fields.",
         "unknown": "An error occurred. Please try again."
       }
+    }
+  },
+  "templates": {
+    "list": {
+      "title": "Templates",
+      "total": "Total: {total}",
+      "create": "Create template",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "table": {
+        "name": "Template",
+        "language": "Language",
+        "variables": "Variables",
+        "status": "Status",
+        "empty": "No templates yet."
+      },
+      "actions": {
+        "edit": "Edit",
+        "preview": "Preview",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "saving": "Saving…"
+      },
+      "errors": {
+        "toggleFailed": "Failed to change status."
+      }
+    },
+    "form": {
+      "create": {
+        "title": "Create template",
+        "subtitle": "Define HTML + variables (placeholders)."
+      },
+      "edit": {
+        "title": "Edit template",
+        "subtitle": "Saving creates a new version (current: v{version}).",
+        "notFound": "Template not found."
+      },
+      "fields": {
+        "name": "Name",
+        "description": "Description",
+        "language": "Language",
+        "active": "Active",
+        "html": "HTML content",
+        "variables": "Variables"
+      },
+      "placeholders": {
+        "name": "e.g. Dormitory letter",
+        "description": "Optional",
+        "html": "Use placeholders like {{owner_full_name}}"
+      },
+      "hints": {
+        "variables": "Keys are used in placeholders like {{key}}.",
+        "systemVariables": "System placeholders: {{stamp_data_url}}, {{qr_data_url}}, {{barcode_data_url}}, {{verification_url}}, {{verification_path}}."
+      },
+      "vars": {
+        "key": "Key",
+        "label": "Label",
+        "labelTr": "Label (TR)",
+        "labelEn": "Label (EN)",
+        "labelAr": "Label (AR)",
+        "preset": "Auto-filled",
+        "presetPlaceholder": "Optional",
+        "type": "Type",
+        "required": "Required"
+      },
+      "actions": {
+        "addVariable": "Add variable",
+        "remove": "Remove",
+        "create": "Create",
+        "update": "Save (new version)",
+        "saving": "Saving…"
+      },
+      "errors": {
+        "nameRequired": "Name is required.",
+        "htmlRequired": "HTML content is required.",
+        "variablesRequired": "At least one valid variable is required.",
+        "saveFailed": "Failed to save template."
+      }
+    },
+    "preview": {
+      "title": "Template preview",
+      "subtitle": "{name} (v{version})",
+      "backToEdit": "Back to edit",
+      "notFound": "Template not found."
     }
   },
   "reports": {

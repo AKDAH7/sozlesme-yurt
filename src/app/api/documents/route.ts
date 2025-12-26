@@ -12,7 +12,23 @@ import type {
 import { requirePermission } from "@/lib/auth/permissions";
 import { companyExists } from "@/lib/db/queries/companies";
 import { createDocument, listDocuments } from "@/lib/db/queries/documents";
+import { getTemplateDetails } from "@/lib/db/queries/templates";
 import { validateCreateDocumentBody } from "@/lib/validation/documents";
+
+function hasPresetValue(preset: unknown): preset is string | number {
+  if (typeof preset === "number") return Number.isFinite(preset);
+  if (typeof preset === "string") return preset.trim().length > 0;
+  return false;
+}
+
+function coercePresetValue(type: unknown, preset: string | number): unknown {
+  if (type === "number") {
+    if (typeof preset === "number") return preset;
+    const n = Number(preset);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return String(preset);
+}
 
 function getRequestMeta(request: Request): {
   ipAddress: string | null;
@@ -32,6 +48,44 @@ export async function POST(request: Request) {
       .catch(() => null)) as CreateDocumentRequestDto | null;
 
     const validated = validateCreateDocumentBody(body);
+
+    let templateId: string | null = null;
+    let templateVersion: number | null = null;
+    let templateValues: Record<string, unknown> | null = null;
+
+    if (validated.templateId) {
+      const details = await getTemplateDetails({
+        templateId: validated.templateId,
+        version: validated.templateVersion ?? undefined,
+      });
+      if (!details) {
+        return Response.json(
+          { ok: false, error: "template_id does not exist" },
+          { status: 400 }
+        );
+      }
+      if (!details.is_active) {
+        return Response.json(
+          { ok: false, error: "template is inactive" },
+          { status: 400 }
+        );
+      }
+
+      templateId = details.id;
+      templateVersion = details.latest_version;
+
+      const nextValues: Record<string, unknown> = {
+        ...(validated.templateValues ?? {}),
+      };
+
+      for (const v of details.variables_definition ?? []) {
+        const preset = (v as { preset_value?: unknown }).preset_value;
+        if (!hasPresetValue(preset)) continue;
+        nextValues[v.key] = coercePresetValue(v.type, preset);
+      }
+
+      templateValues = nextValues;
+    }
 
     if (validated.requesterType === "company") {
       const ok = await companyExists(validated.companyId!);
@@ -68,6 +122,10 @@ export async function POST(request: Request) {
             : null,
         priceAmount: validated.priceAmount,
         priceCurrency: validated.priceCurrency,
+
+        templateId,
+        templateVersion,
+        templateValues,
       },
       audit: {
         actionByUserId: userId,

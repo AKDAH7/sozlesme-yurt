@@ -9,6 +9,7 @@ export type Permission =
   | "documents:add_payment"
   | "documents:change_status"
   | "documents:generate_pdf"
+  | "templates:manage"
   | "reports:view"
   | "users:manage"
   | "companies:manage";
@@ -21,6 +22,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission>> = {
     "documents:add_payment",
     "documents:change_status",
     "documents:generate_pdf",
+    "templates:manage",
     "reports:view",
     "users:manage",
     "companies:manage",

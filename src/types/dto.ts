@@ -24,6 +24,11 @@ export type CreateDocumentRequestDto = {
   price_amount: number;
   price_currency: string;
 
+  // optional template support (versioned)
+  template_id?: string | null;
+  template_version?: number | null;
+  template_values?: Record<string, unknown> | null;
+
   // server-generated fields MUST NOT be sent by client
   token?: never;
   barcode_id?: never;

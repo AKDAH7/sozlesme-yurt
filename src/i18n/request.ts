@@ -8,6 +8,10 @@ import {
   type Locale,
 } from "@/lib/i18n/locales";
 
+import arMessages from "../../messages/ar.json";
+import enMessages from "../../messages/en.json";
+import trMessages from "../../messages/tr.json";
+
 const LOCALE_COOKIE = "NEXT_LOCALE";
 
 export default getRequestConfig(async () => {
@@ -20,7 +24,15 @@ export default getRequestConfig(async () => {
     getPreferredLocaleFromHeaders(headerStore.get("accept-language")) ||
     defaultLocale;
 
-  const messages = (await import(`../../messages/${locale}.json`)).default;
+  // Note: Static imports are more resilient across build tools and server runtimes
+  // than a variable dynamic import.
+  const messagesByLocale: Record<Locale, Record<string, any>> = {
+    ar: arMessages as Record<string, any>,
+    en: enMessages as Record<string, any>,
+    tr: trMessages as Record<string, any>,
+  };
+
+  const messages = messagesByLocale[locale] ?? messagesByLocale[defaultLocale];
 
   return {
     locale,

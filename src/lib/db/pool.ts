@@ -16,10 +16,13 @@ function shouldUseSsl(databaseUrl: string): boolean {
 export function getPool(): Pool {
   if (global.__pgPool) return global.__pgPool;
 
-  const raw =
-    typeof process.env.DATABASE_URL === "string"
-      ? process.env.DATABASE_URL
-      : "";
+  const rawCandidate =
+    (typeof process.env.DATABASE_URL === "string" && process.env.DATABASE_URL) ||
+    (typeof process.env.POSTGRES_URL === "string" && process.env.POSTGRES_URL) ||
+    (typeof process.env.POSTGRES_PRISMA_URL === "string" &&
+      process.env.POSTGRES_PRISMA_URL) ||
+    "";
+  const raw = rawCandidate;
   const trimmed = raw.trim();
   const connectionString =
     (trimmed.startsWith("'") && trimmed.endsWith("'")) ||
@@ -29,7 +32,7 @@ export function getPool(): Pool {
 
   if (!connectionString) {
     throw new Error(
-      "DATABASE_URL is required (set it as an environment variable; do not include surrounding quotes)"
+      "Database connection URL is required. Set DATABASE_URL (or on Vercel Postgres: POSTGRES_URL / POSTGRES_PRISMA_URL). Do not include surrounding quotes."
     );
   }
 

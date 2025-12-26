@@ -11,7 +11,6 @@ import type {
   TrackingStatus,
 } from "@/types/db";
 import { listDocuments } from "@/lib/db/queries/documents";
-import { requireUserId } from "@/lib/auth/requireUser";
 import { listCompaniesMinimal } from "@/lib/db/queries/companies";
 import { CheckCircle2, Circle } from "lucide-react";
 
@@ -45,8 +44,6 @@ export default async function DocumentsPage({
 }) {
   const t = await getTranslations("documents.list");
   const tStatus = await getTranslations("status");
-
-  await requireUserId();
   const sp = await searchParams;
   const page = Math.max(1, Math.floor(Number(sp.page ?? "1") || 1));
   const pageSize = Math.min(

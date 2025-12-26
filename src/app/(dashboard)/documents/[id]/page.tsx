@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { DocumentPdfActions } from "@/components/documents/DocumentDetails/DocumentPdfActions";
 import { DocumentManagementPanel } from "@/components/documents/DocumentDetails/DocumentManagementPanel";
 import { getDocumentById } from "@/lib/db/queries/documents";
-import { requireUserId } from "@/lib/auth/requireUser";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -24,8 +23,6 @@ export default async function DocumentDetailsPage({
 }) {
   const t = await getTranslations("documents.details");
   const tStatus = await getTranslations("status");
-
-  await requireUserId();
   const { id } = await params;
   const doc = await getDocumentById(id);
   if (!doc) return notFound();

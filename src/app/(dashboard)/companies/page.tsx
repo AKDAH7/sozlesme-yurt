@@ -10,7 +10,6 @@ export default async function Page() {
   const t = await getTranslations("companies.list");
   await requirePermission("companies:manage");
   const rows = await listCompanies();
-
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">

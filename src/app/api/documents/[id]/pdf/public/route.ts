@@ -52,10 +52,19 @@ export async function GET(
     return jsonError(404, "PDF bulunamadı.");
   }
 
+  const isVercel = process.env.VERCEL === "1";
+
   const pdfBytes =
     doc.pdf_storage_type === "db"
       ? (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes
-      : await readPdfFromLocalStorage({ documentId: id }).catch(() => null);
+      : await readPdfFromLocalStorage({ documentId: id }).catch(async () => {
+          if (isVercel) {
+            return (
+              (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes ?? null
+            );
+          }
+          return null;
+        });
 
   if (!pdfBytes) {
     return jsonError(404, "PDF bulunamadı.");

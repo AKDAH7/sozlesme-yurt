@@ -26,10 +26,22 @@ export async function renderHtmlToPdfBuffer(params: {
         const chromium = (await import("@sparticuz/chromium")).default;
         const puppeteerCore = (await import("puppeteer-core")).default;
 
+        const executablePath = await chromium.executablePath();
+        if (!executablePath) {
+          throw new Error(
+            "Chromium executablePath() returned empty. Ensure @sparticuz/chromium assets are included in the Vercel deployment."
+          );
+        }
+
         return puppeteerCore.launch({
           headless: true,
-          executablePath: await chromium.executablePath(),
-          args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
+          executablePath,
+          args: [
+            ...chromium.args,
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+          ],
           defaultViewport: { width: 1280, height: 720 },
         });
       })()
@@ -39,7 +51,7 @@ export async function renderHtmlToPdfBuffer(params: {
       });
   try {
     const page = await browser.newPage();
-    await page.setContent(params.html, { waitUntil: "networkidle0" });
+    await page.setContent(params.html, { waitUntil: "networkidle2" });
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,

@@ -39,10 +39,25 @@ export async function GET(
     const url = new URL(request.url);
     const download = url.searchParams.get("download") === "1";
 
-    const pdfBytes =
-      doc.pdf_storage_type === "db"
-        ? (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes
-        : await readPdfFromLocalStorage({ documentId: id });
+    const isVercel = process.env.VERCEL === "1";
+
+    let pdfBytes: Buffer | null | undefined;
+    if (doc.pdf_storage_type === "db") {
+      pdfBytes = (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes;
+    } else {
+      try {
+        pdfBytes = await readPdfFromLocalStorage({ documentId: id });
+      } catch (e) {
+        const anyErr = e as { code?: string } | null;
+        // Vercel filesystem isn't persistent; documents marked as local can still exist.
+        // If local storage misses, try DB as a fallback.
+        if (isVercel && anyErr?.code === "ENOENT") {
+          pdfBytes = (await getDocumentPdfBytes({ documentId: id }))?.pdfBytes;
+        } else {
+          throw e;
+        }
+      }
+    }
 
     if (!pdfBytes) {
       return Response.json(
@@ -81,7 +96,17 @@ export async function GET(
       },
     });
   } catch (err) {
-    const anyErr = err as { status?: number; message?: string } | null;
+    const anyErr = err as {
+      status?: number;
+      message?: string;
+      code?: string;
+    } | null;
+    if (anyErr?.code === "ENOENT") {
+      return Response.json(
+        { ok: false, error: "PDF not found" },
+        { status: 404 }
+      );
+    }
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(

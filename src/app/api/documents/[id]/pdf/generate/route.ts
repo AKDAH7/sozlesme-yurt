@@ -258,12 +258,15 @@ export async function POST(
         msg.includes("chromium")
       ) {
         errorCode = "chromiumFailed";
+        const details = anyErr?.message ? ` Details: ${anyErr.message}` : "";
         return Response.json(
           {
             ok: false,
             errorCode,
             error:
-              "Chromium failed to start on Vercel. Ensure the deployment includes puppeteer-core + @sparticuz/chromium and that the function has enough memory/time.",
+              "Chromium failed to start on Vercel. Ensure the deployment includes puppeteer-core + @sparticuz/chromium and that the function has enough memory/time." +
+              details,
+            details: anyErr?.message ?? null,
           },
           { status: 500 }
         );

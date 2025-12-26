@@ -30,13 +30,19 @@ export function DocumentPdfActions(props: {
       );
       const json = (await res.json().catch(() => null)) as
         | { ok: true; pdf_url: string; pdf_hash: string }
-        | { ok: false; error?: string; errorCode?: string }
+        | {
+            ok: false;
+            error?: string;
+            errorCode?: string;
+            details?: string | null;
+          }
         | null;
 
       if (!res.ok || !json || json.ok !== true) {
         const code = json && "errorCode" in json ? json.errorCode : undefined;
         const message = json && "error" in json ? json.error ?? "" : "";
-        throw new Error(code || message);
+        // Prefer server-provided message; fall back to code.
+        throw new Error(message || code || "generateFailed");
       }
 
       router.refresh();

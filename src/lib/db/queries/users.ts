@@ -14,6 +14,97 @@ export type UserRow = {
   updated_at: string;
 };
 
+export type UserMinimalRow = {
+  id: string;
+  full_name: string;
+  email: string;
+  role: UserRole;
+  is_active: boolean;
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function getUserByIdMinimal(
+  userId: string
+): Promise<UserMinimalRow | null> {
+  const pool = getPool();
+  const result = await pool.query<UserMinimalRow>(
+    `SELECT id,
+            full_name,
+            email::text as email,
+            role,
+            is_active,
+            last_login_at::text as last_login_at,
+            created_at::text as created_at,
+            updated_at::text as updated_at
+     FROM users
+     WHERE id = $1
+     LIMIT 1`,
+    [userId]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function listUsers(): Promise<UserMinimalRow[]> {
+  const pool = getPool();
+  const result = await pool.query<UserMinimalRow>(
+    `SELECT id,
+            full_name,
+            email::text as email,
+            role,
+            is_active,
+            last_login_at::text as last_login_at,
+            created_at::text as created_at,
+            updated_at::text as updated_at
+     FROM users
+     ORDER BY created_at DESC`
+  );
+  return result.rows;
+}
+
+export async function setUserActive(params: {
+  userId: string;
+  isActive: boolean;
+}): Promise<Pick<UserMinimalRow, "id" | "is_active" | "updated_at">> {
+  const pool = getPool();
+  const result = await pool.query<{
+    id: string;
+    is_active: boolean;
+    updated_at: string;
+  }>(
+    `UPDATE users
+     SET is_active = $2
+     WHERE id = $1
+     RETURNING id, is_active, updated_at::text as updated_at`,
+    [params.userId, params.isActive]
+  );
+  const row = result.rows[0];
+  if (!row) throw Object.assign(new Error("Not found"), { status: 404 });
+  return row;
+}
+
+export async function updateUserRole(params: {
+  userId: string;
+  role: UserRole;
+}): Promise<Pick<UserMinimalRow, "id" | "role" | "updated_at">> {
+  const pool = getPool();
+  const result = await pool.query<{
+    id: string;
+    role: UserRole;
+    updated_at: string;
+  }>(
+    `UPDATE users
+     SET role = $2
+     WHERE id = $1
+     RETURNING id, role, updated_at::text as updated_at`,
+    [params.userId, params.role]
+  );
+  const row = result.rows[0];
+  if (!row) throw Object.assign(new Error("Not found"), { status: 404 });
+  return row;
+}
+
 export async function getUserByEmail(email: string): Promise<UserRow | null> {
   const pool = getPool();
   const result = await pool.query<UserRow>(

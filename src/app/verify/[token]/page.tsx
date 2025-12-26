@@ -1,8 +1,8 @@
-export default function Page() {
-  const title = "src/app/verify/[token]/page.tsx";
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>{title}</h1>
-    </main>
-  );
+import VerifyClient from "@/components/verify/VerifyClient";
+
+export default async function Page(props: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await props.params;
+  return <VerifyClient initialToken={token} />;
 }

@@ -1,8 +1,5 @@
+import VerifyClient from "@/components/verify/VerifyClient";
+
 export default function Page() {
-  const title = "src/app/verify/page.tsx";
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>{title}</h1>
-    </main>
-  );
+  return <VerifyClient />;
 }

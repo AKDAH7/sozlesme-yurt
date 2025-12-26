@@ -1,7 +1,180 @@
-export async function handler(method: string) {
-  return Response.json({ ok: true, method });
+import { NextResponse } from "next/server";
+
+import {
+  createVerifySession,
+  hashIdentityNo,
+  insertVerificationAttempt,
+  verifyDocumentMatch,
+} from "@/lib/db/queries/verify";
+import { rateLimit } from "@/lib/security/rateLimit";
+import { insertDocumentAuditLog } from "@/lib/security/audit";
+
+export const runtime = "nodejs";
+
+function getClientIp(req: Request): string | null {
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    return first || null;
+  }
+  return req.headers.get("x-real-ip");
 }
 
-export async function POST() {
-  return handler('POST');
+type VerifyRequest = {
+  token?: string;
+  referenceNo: string;
+  identityNo: string;
+  birthDate: string; // YYYY-MM-DD
+};
+
+function isValidBirthDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+export async function POST(req: Request) {
+  const ipAddress = getClientIp(req);
+  const userAgent = req.headers.get("user-agent");
+
+  const rl = rateLimit({
+    key: `verify:${ipAddress ?? "unknown"}`,
+    limit: 10,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "Çok fazla deneme. Lütfen daha sonra tekrar deneyin.",
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rl.retryAfterSeconds ?? 60) },
+      }
+    );
+  }
+
+  let body: VerifyRequest;
+  try {
+    body = (await req.json()) as VerifyRequest;
+  } catch {
+    return NextResponse.json(
+      { ok: false, message: "Geçersiz istek." },
+      { status: 400 }
+    );
+  }
+
+  const token =
+    typeof body.token === "string" && body.token.trim()
+      ? body.token.trim()
+      : undefined;
+  const referenceNo =
+    typeof body.referenceNo === "string" ? body.referenceNo.trim() : "";
+  const identityNo =
+    typeof body.identityNo === "string" ? body.identityNo.trim() : "";
+  const birthDate =
+    typeof body.birthDate === "string" ? body.birthDate.trim() : "";
+
+  if (
+    !referenceNo ||
+    !identityNo ||
+    !birthDate ||
+    !isValidBirthDate(birthDate)
+  ) {
+    return NextResponse.json(
+      { ok: false, message: "Lütfen tüm alanları doğru formatta doldurun." },
+      { status: 400 }
+    );
+  }
+
+  const identityNoHash = hashIdentityNo(identityNo);
+
+  try {
+    const match = await verifyDocumentMatch({
+      identityNo,
+      referenceNo,
+      birthDate,
+      token,
+    });
+
+    if (!match) {
+      await insertVerificationAttempt({
+        ipAddress: ipAddress ?? "0.0.0.0",
+        success: false,
+        token: token ?? null,
+        referenceNo,
+        identityNoHash,
+        birthDate,
+      });
+
+      await insertDocumentAuditLog({
+        documentId: null,
+        actionType: "update",
+        actionByUserId: null,
+        ipAddress: ipAddress,
+        userAgent: userAgent ?? null,
+        detailsJson: {
+          event: "verify_fail",
+          token_present: Boolean(token),
+          reference_no: referenceNo,
+          birth_date: birthDate,
+        },
+      });
+
+      return NextResponse.json(
+        { ok: false, message: "Bilgiler doğrulanamadı." },
+        { status: 200 }
+      );
+    }
+
+    await insertVerificationAttempt({
+      ipAddress: ipAddress ?? "0.0.0.0",
+      success: true,
+      token: token ?? null,
+      referenceNo,
+      identityNoHash,
+      birthDate,
+    });
+
+    await insertDocumentAuditLog({
+      documentId: match.id,
+      actionType: "update",
+      actionByUserId: null,
+      ipAddress: ipAddress,
+      userAgent: userAgent ?? null,
+      detailsJson: {
+        event: "verify_success",
+        token_present: Boolean(token),
+        reference_no: referenceNo,
+        birth_date: birthDate,
+      },
+    });
+
+    const session = await createVerifySession({
+      documentId: match.id,
+      ipAddress,
+      userAgent,
+      ttlMinutes: 5,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      result: {
+        documentId: match.id,
+        status: match.doc_status,
+        referenceNo: match.reference_no,
+        ownerFullName: match.owner_full_name,
+        universityName: match.university_name,
+        pdfReady: Boolean(match.pdf_url && match.pdf_hash),
+      },
+      verifySession: {
+        token: session.token,
+        expiresAt: session.expiresAt,
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, message: "Bir hata oluştu. Lütfen tekrar deneyin." },
+      { status: 500 }
+    );
+  }
 }

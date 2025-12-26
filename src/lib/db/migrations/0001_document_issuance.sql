@@ -72,9 +72,14 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at    timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE TRIGGER trg_users_updated_at
-BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_users_updated_at') THEN
+    CREATE TRIGGER trg_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+  END IF;
+END $$;
 
 -- COMPANIES
 CREATE TABLE IF NOT EXISTS companies (
@@ -90,9 +95,14 @@ CREATE TABLE IF NOT EXISTS companies (
 
 CREATE INDEX IF NOT EXISTS idx_companies_company_name ON companies (company_name);
 
-CREATE TRIGGER trg_companies_updated_at
-BEFORE UPDATE ON companies
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_companies_updated_at') THEN
+    CREATE TRIGGER trg_companies_updated_at
+    BEFORE UPDATE ON companies
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+  END IF;
+END $$;
 
 -- DOCUMENTS
 CREATE TABLE IF NOT EXISTS documents (
@@ -162,9 +172,14 @@ CREATE INDEX IF NOT EXISTS idx_documents_payment_status ON documents (payment_st
 CREATE INDEX IF NOT EXISTS idx_documents_company_id ON documents (company_id);
 CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents (created_at);
 
-CREATE TRIGGER trg_documents_updated_at
-BEFORE UPDATE ON documents
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_documents_updated_at') THEN
+    CREATE TRIGGER trg_documents_updated_at
+    BEFORE UPDATE ON documents
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+  END IF;
+END $$;
 
 -- PAYMENTS
 CREATE TABLE IF NOT EXISTS payments (

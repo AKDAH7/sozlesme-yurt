@@ -1,6 +1,6 @@
 import { hashPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
-import { createUser } from "@/lib/db/queries/users";
+import { countUsers, createUser } from "@/lib/db/queries/users";
 
 type RegisterBody = {
   fullName?: unknown;
@@ -48,11 +48,13 @@ export async function POST(request: Request) {
   let userId: string;
   let role: string;
   try {
+    const totalUsers = await countUsers();
+    const bootstrapRole = totalUsers === 0 ? "admin" : "staff";
     const created = await createUser({
       fullName,
       email,
       passwordHash,
-      role: "staff",
+      role: bootstrapRole,
     });
     userId = created.id;
     role = created.role;

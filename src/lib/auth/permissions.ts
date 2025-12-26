@@ -44,7 +44,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission>> = {
 };
 
 export function hasPermission(role: UserRole, permission: Permission): boolean {
-  return ROLE_PERMISSIONS[role].has(permission);
+  // Admin is an explicit superuser.
+  if (role === "admin") return true;
+  const permissions = ROLE_PERMISSIONS[role];
+  return Boolean(permissions && permissions.has(permission));
 }
 
 export async function requirePermission(
@@ -54,6 +57,14 @@ export async function requirePermission(
   const user = await getUserByIdMinimal(userId);
   if (!user || !user.is_active) {
     throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  }
+  // Safety: if DB contains an unexpected role value, treat as unauthorized instead
+  // of crashing during Server Component render.
+  if (!ROLE_PERMISSIONS[user.role]) {
+    throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  }
+  if (user.role === "admin") {
+    return { userId, role: user.role };
   }
   if (!hasPermission(user.role, permission)) {
     throw Object.assign(new Error("Forbidden"), { status: 403 });
@@ -67,6 +78,9 @@ export async function requireRole(
   const userId = await requireUserId();
   const user = await getUserByIdMinimal(userId);
   if (!user || !user.is_active) {
+    throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  }
+  if (!ROLE_PERMISSIONS[user.role]) {
     throw Object.assign(new Error("Unauthorized"), { status: 401 });
   }
   if (user.role !== role) {

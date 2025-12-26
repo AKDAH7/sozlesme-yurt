@@ -152,3 +152,13 @@ export async function createUser(input: CreateUserInput): Promise<CreatedUser> {
   if (!row) throw new Error("Failed to create user");
   return row;
 }
+
+export async function countUsers(): Promise<number> {
+  const pool = getPool();
+  const result = await pool.query<{ count: string }>(
+    `SELECT COUNT(*)::text as count FROM users`
+  );
+  const raw = result.rows[0]?.count ?? "0";
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : 0;
+}

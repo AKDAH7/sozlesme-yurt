@@ -17,8 +17,10 @@ export function getPool(): Pool {
   if (global.__pgPool) return global.__pgPool;
 
   const rawCandidate =
-    (typeof process.env.DATABASE_URL === "string" && process.env.DATABASE_URL) ||
-    (typeof process.env.POSTGRES_URL === "string" && process.env.POSTGRES_URL) ||
+    (typeof process.env.DATABASE_URL === "string" &&
+      process.env.DATABASE_URL) ||
+    (typeof process.env.POSTGRES_URL === "string" &&
+      process.env.POSTGRES_URL) ||
     (typeof process.env.POSTGRES_PRISMA_URL === "string" &&
       process.env.POSTGRES_PRISMA_URL) ||
     "";

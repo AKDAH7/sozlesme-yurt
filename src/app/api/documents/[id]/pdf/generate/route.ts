@@ -52,16 +52,25 @@ function getRequestMeta(request: Request): {
 }
 
 async function loadStampDataUrl(): Promise<string> {
-  const filePath = path.join(
-    process.cwd(),
-    "src",
-    "lib",
-    "pdf",
-    "assets",
-    "stamp.png"
-  );
-  const bytes = await fs.readFile(filePath);
-  return `data:image/png;base64,${bytes.toString("base64")}`;
+  // Vercel/serverless bundles may not include source asset paths.
+  // Try a couple of likely locations and fall back to a transparent pixel.
+  const candidates = [
+    path.join(process.cwd(), "public", "stamp.png"),
+    path.join(process.cwd(), "public", "pdf", "stamp.png"),
+    path.join(process.cwd(), "src", "lib", "pdf", "assets", "stamp.png"),
+  ];
+
+  for (const filePath of candidates) {
+    try {
+      const bytes = await fs.readFile(filePath);
+      return `data:image/png;base64,${bytes.toString("base64")}`;
+    } catch {
+      // try next
+    }
+  }
+
+  // 1x1 transparent PNG
+  return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/ax2wGQAAAAASUVORK5CYII=";
 }
 
 export async function POST(
@@ -210,16 +219,56 @@ export async function POST(
       pdf_hash: updated.pdf_hash,
     });
   } catch (err) {
-    const anyErr = err as { status?: number; message?: string } | null;
+    const anyErr = err as {
+      status?: number;
+      message?: string;
+      code?: string;
+    } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
 
-    const errorCode =
+    let errorCode: string =
       status === 401 || status === 403
         ? "forbidden"
         : status === 404
         ? "notFound"
         : "generateFailed";
+
+    // Vercel-specific/common operational failures with actionable hints.
+    const msg = (anyErr?.message ?? "").toLowerCase();
+    if (status >= 500) {
+      // Postgres: relation does not exist
+      if (anyErr?.code === "42P01" || msg.includes("document_pdfs")) {
+        errorCode = "migrationMissing";
+        return Response.json(
+          {
+            ok: false,
+            errorCode,
+            error:
+              "Production database is missing table document_pdfs. Run migrations (npm run migrate) against the same DATABASE_URL used by Vercel.",
+          },
+          { status: 500 }
+        );
+      }
+
+      // Chromium / puppeteer launch issues
+      if (
+        msg.includes("failed to launch") ||
+        msg.includes("executablepath") ||
+        msg.includes("chromium")
+      ) {
+        errorCode = "chromiumFailed";
+        return Response.json(
+          {
+            ok: false,
+            errorCode,
+            error:
+              "Chromium failed to start on Vercel. Ensure the deployment includes puppeteer-core + @sparticuz/chromium and that the function has enough memory/time.",
+          },
+          { status: 500 }
+        );
+      }
+    }
 
     return Response.json(
       {

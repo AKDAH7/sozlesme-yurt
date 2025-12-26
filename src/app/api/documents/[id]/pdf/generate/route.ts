@@ -19,6 +19,8 @@ import { getTemplateDetails } from "@/lib/db/queries/templates";
 import { upsertDocumentPdf } from "@/lib/db/queries/documentPdfs";
 
 export const runtime = "nodejs";
+// PDF generation can take longer on serverless.
+export const maxDuration = 60;
 
 function escapeHtml(value: string): string {
   return value

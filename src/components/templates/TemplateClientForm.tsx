@@ -303,7 +303,7 @@ export default function TemplateClientForm(props: {
       <div>
         <div className="text-xs text-muted-foreground">{t("fields.html")}</div>
         <textarea
-          className="min-h-[220px] w-full rounded-md border border-input bg-transparent p-3 font-mono text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="min-h-55 w-full rounded-md border border-input bg-transparent p-3 font-mono text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           value={values.html_content}
           onChange={(e) =>
             setValues((v) => ({ ...v, html_content: e.target.value }))

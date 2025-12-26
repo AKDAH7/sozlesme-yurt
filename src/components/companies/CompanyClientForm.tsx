@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,8 @@ export default function CompanyClientForm(props: {
   companyId?: string;
   initialValues?: Partial<CompanyFormValues>;
 }) {
+  const t = useTranslations("companies.form");
+
   const [values, setValues] = useState<CompanyFormValues>({
     company_name: props.initialValues?.company_name ?? "",
     contact_name: props.initialValues?.contact_name ?? "",
@@ -34,7 +37,7 @@ export default function CompanyClientForm(props: {
     setError(null);
 
     if (!values.company_name.trim()) {
-      setError("Şirket adı zorunludur.");
+      setError(t("errors.companyNameRequired"));
       return;
     }
 
@@ -60,11 +63,22 @@ export default function CompanyClientForm(props: {
 
       const data = (await res.json()) as {
         ok: boolean;
+        errorCode?: string;
         error?: string;
         id?: string;
       };
       if (!data.ok) {
-        setError(data.error ?? "İşlem başarısız.");
+        const code = data.errorCode;
+        if (code === "companyNameRequired") {
+          setError(t("errors.companyNameRequired"));
+          return;
+        }
+        if (code === "createFailed" || code === "updateFailed") {
+          setError(t("errors.actionFailed"));
+          return;
+        }
+
+        setError(t("errors.actionFailed"));
         return;
       }
 
@@ -75,7 +89,7 @@ export default function CompanyClientForm(props: {
         window.location.href = "/companies";
       }
     } catch {
-      setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+      setError(t("errors.unknown"));
     } finally {
       setLoading(false);
     }
@@ -87,57 +101,65 @@ export default function CompanyClientForm(props: {
       className="space-y-4 rounded-lg border border-border bg-card p-4"
     >
       <div>
-        <div className="text-xs text-muted-foreground">Şirket Adı</div>
+        <div className="text-xs text-muted-foreground">
+          {t("fields.companyName")}
+        </div>
         <Input
           value={values.company_name}
           onChange={(e) =>
             setValues((v) => ({ ...v, company_name: e.target.value }))
           }
-          placeholder="Şirket adı"
+          placeholder={t("placeholders.companyName")}
           required
         />
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <div>
-          <div className="text-xs text-muted-foreground">İletişim Kişisi</div>
+          <div className="text-xs text-muted-foreground">
+            {t("fields.contactName")}
+          </div>
           <Input
             value={values.contact_name}
             onChange={(e) =>
               setValues((v) => ({ ...v, contact_name: e.target.value }))
             }
-            placeholder="Ad Soyad"
+            placeholder={t("placeholders.contactName")}
           />
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Telefon</div>
+          <div className="text-xs text-muted-foreground">
+            {t("fields.contactPhone")}
+          </div>
           <Input
             value={values.contact_phone}
             onChange={(e) =>
               setValues((v) => ({ ...v, contact_phone: e.target.value }))
             }
-            placeholder="Telefon"
+            placeholder={t("placeholders.contactPhone")}
           />
         </div>
       </div>
 
       <div>
-        <div className="text-xs text-muted-foreground">E-posta</div>
+        <div className="text-xs text-muted-foreground">
+          {t("fields.contactEmail")}
+        </div>
         <Input
           value={values.contact_email}
           onChange={(e) =>
             setValues((v) => ({ ...v, contact_email: e.target.value }))
           }
-          placeholder="email@company.com"
+          placeholder={t("placeholders.contactEmail")}
         />
       </div>
 
       <div>
-        <div className="text-xs text-muted-foreground">Not</div>
+        <div className="text-xs text-muted-foreground">{t("fields.notes")}</div>
         <Input
           value={values.notes}
           onChange={(e) => setValues((v) => ({ ...v, notes: e.target.value }))}
-          placeholder="Notlar"
+          placeholder={t("placeholders.notes")}
         />
       </div>
 
@@ -149,10 +171,10 @@ export default function CompanyClientForm(props: {
 
       <Button type="submit" disabled={loading} className="w-full">
         {loading
-          ? "Kaydediliyor..."
+          ? t("actions.saving")
           : props.mode === "create"
-          ? "Oluştur"
-          : "Güncelle"}
+          ? t("actions.create")
+          : t("actions.update")}
       </Button>
     </form>
   );

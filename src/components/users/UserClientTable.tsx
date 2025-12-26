@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import type { UserRole } from "@/types/db";
@@ -18,6 +19,9 @@ export type UserRowUi = {
 const ROLES: UserRole[] = ["admin", "staff", "accounting", "viewer"];
 
 export default function UserClientTable(props: { users: UserRowUi[] }) {
+  const t = useTranslations("users.table");
+  const tRoles = useTranslations("users.roles");
+
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,14 +34,27 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = (await res.json()) as { ok: boolean; error?: string };
+      const data = (await res.json()) as {
+        ok: boolean;
+        errorCode?: string;
+        error?: string;
+      };
       if (!data.ok) {
-        setError(data.error ?? "İşlem başarısız.");
+        const code = data.errorCode;
+        if (code === "updateFailed") {
+          setError(t("errors.updateFailed"));
+          return;
+        }
+        if (code === "noValidFields") {
+          setError(t("errors.noValidFields"));
+          return;
+        }
+        setError(t("errors.actionFailed"));
         return;
       }
       window.location.reload();
     } catch {
-      setError("Bir hata oluştu.");
+      setError(t("errors.unknown"));
     } finally {
       setLoadingId(null);
     }
@@ -55,10 +72,10 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-foreground">
-              <th className="px-4 py-3">Ad Soyad</th>
-              <th className="px-4 py-3">E-posta</th>
-              <th className="px-4 py-3">Rol</th>
-              <th className="px-4 py-3">Durum</th>
+              <th className="px-4 py-3">{t("columns.fullName")}</th>
+              <th className="px-4 py-3">{t("columns.email")}</th>
+              <th className="px-4 py-3">{t("columns.role")}</th>
+              <th className="px-4 py-3">{t("columns.status")}</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -82,7 +99,7 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
                     >
                       {ROLES.map((r) => (
                         <option key={r} value={r}>
-                          {r}
+                          {tRoles(r)}
                         </option>
                       ))}
                     </select>
@@ -95,7 +112,7 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
                           : "text-muted-foreground"
                       }
                     >
-                      {u.is_active ? "Aktif" : "Pasif"}
+                      {u.is_active ? t("status.active") : t("status.inactive")}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -107,7 +124,7 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
                         patchUser(u.id, { is_active: !u.is_active })
                       }
                     >
-                      {u.is_active ? "Disable" : "Enable"}
+                      {u.is_active ? t("actions.disable") : t("actions.enable")}
                     </Button>
                   </td>
                 </tr>
@@ -115,7 +132,7 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
             ) : (
               <tr>
                 <td className="px-4 py-6 text-muted-foreground" colSpan={5}>
-                  Kayıt yok.
+                  {t("empty")}
                 </td>
               </tr>
             )}

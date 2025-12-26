@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import {
   BarChart3,
   FileText,
@@ -25,28 +26,40 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { isRtl, type Locale } from "@/lib/i18n/locales";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/documents", label: "Documents", icon: ScrollText },
-  { href: "/documents/new", label: "New Document", icon: PenSquare },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/templates", label: "Templates", icon: FileText },
+  { href: "/", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/documents", labelKey: "documents", icon: ScrollText },
+  { href: "/documents/new", labelKey: "newDocument", icon: PenSquare },
+  { href: "/reports", labelKey: "reports", icon: BarChart3 },
+  { href: "/templates", labelKey: "templates", icon: FileText },
 ] as const;
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const tApp = useTranslations("app");
+  const tNav = useTranslations("nav");
+  const tActions = useTranslations("actions");
+  const locale = useLocale() as Locale;
+  const rtl = isRtl(locale);
 
   return (
-    <Sidebar>
+    <Sidebar side={rtl ? "right" : "left"}>
       <SidebarHeader>
-        <div className="flex items-start justify-between gap-3 px-2 py-1">
+        <div
+          className={
+            rtl
+              ? "flex items-start justify-between gap-3 px-2 py-1 flex-row-reverse"
+              : "flex items-start justify-between gap-3 px-2 py-1"
+          }
+        >
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold tracking-tight">
-              Control Panel
+              {tApp("controlPanel")}
             </div>
             <div className="truncate text-xs text-muted-foreground">
-              Document issuance
+              {tApp("documentIssuance")}
             </div>
           </div>
           <ThemeToggle />
@@ -55,7 +68,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{tNav("navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -70,7 +83,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link href={item.href}>
                         <item.icon className="size-4" />
-                        <span>{item.label}</span>
+                        <span>{tNav(item.labelKey)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -85,7 +98,7 @@ export function AppSidebar() {
         <SidebarSeparator />
         <div className="p-2">
           <Button asChild variant="secondary" className="w-full">
-            <Link href="/logout">Logout</Link>
+            <Link href="/logout">{tActions("logout")}</Link>
           </Button>
         </div>
       </SidebarFooter>

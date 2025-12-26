@@ -31,7 +31,11 @@ export async function GET() {
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to list users" },
+      {
+        ok: false,
+        errorCode: "listFailed",
+        error: anyErr?.message ?? "Failed to list users",
+      },
       { status }
     );
   }
@@ -51,19 +55,19 @@ export async function POST(request: Request) {
 
     if (!fullName) {
       return Response.json(
-        { ok: false, error: "full_name is required" },
+        { ok: false, errorCode: "fullNameRequired" },
         { status: 400 }
       );
     }
     if (!email || !email.includes("@")) {
       return Response.json(
-        { ok: false, error: "email is invalid" },
+        { ok: false, errorCode: "emailInvalid" },
         { status: 400 }
       );
     }
     if (!password || password.length < 8) {
       return Response.json(
-        { ok: false, error: "password must be at least 8 characters" },
+        { ok: false, errorCode: "passwordTooShort" },
         { status: 400 }
       );
     }
@@ -82,7 +86,11 @@ export async function POST(request: Request) {
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to create user" },
+      {
+        ok: false,
+        errorCode: "createFailed",
+        error: anyErr?.message ?? "Failed to create user",
+      },
       { status }
     );
   }

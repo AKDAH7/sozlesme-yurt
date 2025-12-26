@@ -31,7 +31,10 @@ export async function GET(
     const { id } = await context.params;
     const user = await getUserByIdMinimal(id);
     if (!user) {
-      return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+      return Response.json(
+        { ok: false, errorCode: "notFound", error: "Not found" },
+        { status: 404 }
+      );
     }
     return Response.json({ ok: true, user });
   } catch (err) {
@@ -39,7 +42,11 @@ export async function GET(
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to load user" },
+      {
+        ok: false,
+        errorCode: "loadFailed",
+        error: anyErr?.message ?? "Failed to load user",
+      },
       { status }
     );
   }
@@ -74,7 +81,7 @@ export async function PATCH(
 
     if (!Object.keys(updates).length) {
       return Response.json(
-        { ok: false, error: "No valid fields" },
+        { ok: false, errorCode: "noValidFields", error: "No valid fields" },
         { status: 400 }
       );
     }
@@ -85,7 +92,11 @@ export async function PATCH(
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to update user" },
+      {
+        ok: false,
+        errorCode: "updateFailed",
+        error: anyErr?.message ?? "Failed to update user",
+      },
       { status }
     );
   }

@@ -1,0 +1,502 @@
+{
+  "app": {
+    "controlPanel": "Kontrol Paneli",
+    "documentIssuance": "Belge düzenleme"
+  },
+  "language": {
+    "label": "Dil",
+    "ar": "AR",
+    "tr": "TR",
+    "en": "EN"
+  },
+  "nav": {
+    "navigation": "Menü",
+    "dashboard": "Panel",
+    "documents": "Belgeler",
+    "newDocument": "Yeni belge",
+    "reports": "Raporlar",
+    "templates": "Şablonlar",
+    "companies": "Şirketler",
+    "users": "Kullanıcılar"
+  },
+  "actions": {
+    "logout": "Çıkış",
+    "newDocument": "Yeni belge",
+    "verify": "Doğrula",
+    "verifying": "Doğrulanıyor...",
+    "view": "Görüntüle",
+    "download": "İndir",
+    "toggleSidebar": "Kenar çubuğunu aç/kapat"
+  },
+  "verify": {
+    "title": "Belge doğrulama",
+    "subtitle": "Belge doğrulamak için aşağıdaki bilgileri girin.",
+    "tokenOptionalLabel": "Token (opsiyonel)",
+    "tokenOptionalPlaceholder": "QR ile gelen token",
+    "referenceNoLabel": "Referans No",
+    "referenceNoPlaceholder": "Örn: REF-2025-0001",
+    "identityNoLabel": "T.C. Kimlik No",
+    "identityNoPlaceholder": "11 hane",
+    "birthDateLabel": "Doğum tarihi",
+    "result": {
+      "status": "Durum",
+      "reference": "Referans",
+      "fullName": "Ad Soyad",
+      "university": "Üniversite",
+      "pdf": "PDF"
+    },
+    "sessionExpires": "Oturum süresi:",
+    "errors": {
+      "verifyFailed": "Bilgiler doğrulanamadı.",
+      "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
+    }
+  },
+  "terms": {
+    "referenceNo": "Referans No",
+    "barcode": "Barkod",
+    "verification": "Doğrulama",
+    "tracking": "Takip",
+    "payment": "Ödeme"
+  },
+  "status": {
+    "document": {
+      "active": "Aktif",
+      "inactive": "Pasif"
+    },
+    "payment": {
+      "unpaid": "Ödenmedi",
+      "partial": "Kısmi ödendi",
+      "paid": "Ödendi"
+    },
+    "tracking": {
+      "created": "Oluşturuldu",
+      "delivered_to_student": "Öğrenciye teslim edildi",
+      "delivered_to_agent": "Temsilciye teslim edildi",
+      "shipped": "Kargoya verildi",
+      "received": "Teslim alındı",
+      "cancelled": "İptal edildi"
+    },
+    "paymentMethod": {
+      "cash": "Nakit",
+      "bank_transfer": "Havale/EFT",
+      "card": "Kart",
+      "other": "Diğer"
+    },
+    "pdf": {
+      "ready": "Hazır",
+      "notReady": "Hazır değil"
+    }
+  },
+  "documents": {
+    "details": {
+      "title": "Belge",
+      "back": "Geri",
+      "requesterType": {
+        "company": "Şirket",
+        "direct": "Bireysel"
+      },
+      "pdfActions": {
+        "generate": "PDF oluştur",
+        "regenerate": "PDF yeniden oluştur",
+        "viewPdf": "PDF görüntüle",
+        "downloadPdf": "PDF indir",
+        "errors": {
+          "notFound": "Belge bulunamadı.",
+          "forbidden": "PDF oluşturma yetkiniz yok.",
+          "generateFailed": "PDF oluşturulamadı."
+        }
+      },
+      "managementPanel": {
+        "current": "Mevcut",
+        "refresh": "Yenile",
+        "close": "Kapat",
+        "optional": "Opsiyonel",
+        "note": "Not",
+        "status": {
+          "title": "Durum",
+          "activate": "Aktifleştir",
+          "deactivate": "Pasifleştir"
+        },
+        "tracking": {
+          "title": "Takip",
+          "newStatus": "Yeni durum",
+          "update": "Takibi güncelle",
+          "table": {
+            "when": "Tarih",
+            "from": "Önce",
+            "to": "Sonra",
+            "by": "İşlemi yapan",
+            "note": "Not"
+          },
+          "empty": "Takip geçmişi yok."
+        },
+        "payments": {
+          "title": "Ödemeler",
+          "currency": "Para birimi",
+          "addPayment": "Ödeme ekle",
+          "summary": {
+            "price": "Tutar",
+            "paid": "Ödenen",
+            "remaining": "Kalan"
+          },
+          "form": {
+            "amount": "Tutar",
+            "method": "Yöntem",
+            "paymentDate": "Ödeme tarihi",
+            "receiptNo": "Makbuz no",
+            "save": "Ödemeyi kaydet"
+          },
+          "table": {
+            "date": "Tarih",
+            "amount": "Tutar",
+            "method": "Yöntem",
+            "receipt": "Makbuz",
+            "by": "Alan",
+            "note": "Not"
+          },
+          "empty": "Ödeme yok."
+        },
+        "errors": {
+          "notFound": "Belge bulunamadı.",
+          "forbidden": "Bu belgeyi yönetme yetkiniz yok.",
+          "loadFailed": "Yönetim verileri yüklenemedi.",
+          "invalidDocStatus": "Geçersiz durum.",
+          "updateStatusFailed": "Durum güncellenemedi.",
+          "invalidTrackingStatus": "Geçersiz takip durumu.",
+          "updateTrackingFailed": "Takip güncellenemedi.",
+          "amountMustBeGreaterThanZero": "Tutar 0'dan büyük olmalıdır.",
+          "invalidCurrency": "Para birimi zorunludur.",
+          "invalidPaymentMethod": "Geçersiz ödeme yöntemi.",
+          "invalidPaymentDate": "Geçersiz ödeme tarihi.",
+          "addPaymentFailed": "Ödeme eklenemedi."
+        }
+      },
+      "fields": {
+        "reference": "Referans No",
+        "barcode": "Barkod",
+        "fileStatus": "Dosya durumu",
+        "tracking": "Takip",
+        "owner": "Sahibi",
+        "idNumber": "T.C. Kimlik No",
+        "birthDate": "Doğum tarihi",
+        "university": "Üniversite",
+        "accommodation": "Konaklama",
+        "address": "Adres",
+        "issueDate": "Düzenleme tarihi",
+        "footerDatetime": "Alt bilgi tarihi",
+        "requester": "Talep eden",
+        "companyCustomer": "Şirket/Müşteri",
+        "price": "Tutar",
+        "payment": "Ödeme",
+        "created": "Oluşturulma"
+      }
+    },
+    "list": {
+      "title": "Belgeler",
+      "total": "Toplam {total}",
+      "createNew": "Yeni oluştur",
+      "filters": {
+        "search": "Ara",
+        "searchPlaceholder": "Referans, barkod, ad soyad, kimlik no",
+        "status": "Durum",
+        "tracking": "Takip",
+        "payment": "Ödeme",
+        "requester": "Talep eden",
+        "company": "Şirket",
+        "sort": "Sıralama",
+        "pageSize": "Sayfa boyutu",
+        "apply": "Uygula",
+        "all": "Tümü",
+        "newest": "En yeni",
+        "oldest": "En eski",
+        "requesterCompany": "Şirket",
+        "requesterDirect": "Bireysel"
+      },
+      "table": {
+        "pdf": "PDF",
+        "creator": "Oluşturan",
+        "fileOwner": "Belge sahibi",
+        "idNumber": "Kimlik No",
+        "reference": "Referans No",
+        "fileStatus": "Dosya durumu",
+        "tracking": "Takip",
+        "price": "Tutar",
+        "payment": "Ödeme",
+        "companyCustomer": "Şirket/Müşteri",
+        "created": "Oluşturulma",
+        "empty": "Belge bulunamadı."
+      },
+      "pagination": {
+        "prev": "Önceki",
+        "next": "Sonraki",
+        "page": "Sayfa {page}"
+      }
+    },
+    "new": {
+      "title": "Belge oluştur",
+      "subtitle": "Zorunlu alanları doldurun ve Oluştur'a tıklayın.",
+      "sections": {
+        "owner": "Sahip",
+        "document": "Belge",
+        "requester": "Talep eden",
+        "pricing": "Fiyatlandırma"
+      },
+      "fields": {
+        "name": "Ad Soyad",
+        "idNumber": "T.C. Kimlik No",
+        "birthDate": "Doğum tarihi",
+        "university": "Üniversite",
+        "accommodation": "Konaklama",
+        "address": "Adres",
+        "issueDate": "Düzenleme tarihi",
+        "footerDatetime": "Alt bilgi tarihi",
+        "requesterType": "Talep eden türü",
+        "requesterDirect": "Bireysel",
+        "requesterCompany": "Şirket",
+        "companyId": "Şirket ID",
+        "customerName": "Müşteri adı",
+        "customerPhone": "Müşteri telefonu",
+        "amount": "Tutar",
+        "currency": "Para birimi"
+      },
+      "actions": {
+        "create": "Oluştur",
+        "creating": "Oluşturuluyor…",
+        "cancel": "Vazgeç"
+      },
+      "errors": {
+        "createFailed": "Oluşturma başarısız"
+      }
+    },
+    "preview": {
+      "title": "Belge önizleme"
+    }
+  },
+  "dashboard": {
+    "home": {
+      "hint": "Gezinmek için menüyü kullanın."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Giriş",
+      "newHere": "Yeni misiniz?",
+      "createAccount": "Hesap oluştur",
+      "fields": {
+        "email": "E-posta",
+        "password": "Şifre"
+      },
+      "actions": {
+        "signIn": "Giriş yap",
+        "signingIn": "Giriş yapılıyor…"
+      },
+      "errors": {
+        "loginFailed": "Giriş başarısız"
+      }
+    },
+    "register": {
+      "title": "Hesap oluştur",
+      "alreadyHave": "Zaten hesabınız var mı?",
+      "login": "Giriş",
+      "fields": {
+        "fullName": "Ad Soyad",
+        "email": "E-posta",
+        "password": "Şifre"
+      },
+      "actions": {
+        "createAccount": "Hesap oluştur",
+        "creating": "Oluşturuluyor…"
+      },
+      "errors": {
+        "accountCreationFailed": "Hesap oluşturma başarısız"
+      }
+    }
+  },
+  "companies": {
+    "list": {
+      "title": "Şirketler",
+      "total": "Toplam {total}",
+      "create": "Oluştur"
+    },
+    "table": {
+      "company": "Şirket",
+      "contact": "İletişim",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "edit": "Düzenle",
+      "empty": "Kayıt yok."
+    },
+    "form": {
+      "create": {
+        "title": "Şirket oluştur",
+        "subtitle": "Yeni bir şirket ekleyin"
+      },
+      "edit": {
+        "title": "Şirketi düzenle",
+        "notFound": "Bulunamadı"
+      },
+      "fields": {
+        "companyName": "Şirket Adı",
+        "contactName": "İletişim Kişisi",
+        "contactPhone": "Telefon",
+        "contactEmail": "E-posta",
+        "notes": "Not"
+      },
+      "placeholders": {
+        "companyName": "Şirket adı",
+        "contactName": "Ad Soyad",
+        "contactPhone": "Telefon",
+        "contactEmail": "email@company.com",
+        "notes": "Notlar"
+      },
+      "actions": {
+        "create": "Oluştur",
+        "update": "Güncelle",
+        "saving": "Kaydediliyor…"
+      },
+      "errors": {
+        "companyNameRequired": "Şirket adı zorunludur.",
+        "actionFailed": "İşlem başarısız.",
+        "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
+      }
+    }
+  },
+  "users": {
+    "list": {
+      "title": "Kullanıcılar",
+      "total": "Toplam {total}",
+      "create": "Oluştur"
+    },
+    "create": {
+      "title": "Kullanıcı oluştur",
+      "subtitle": "Sadece admin"
+    },
+    "roles": {
+      "admin": "Admin",
+      "staff": "Personel",
+      "accounting": "Muhasebe",
+      "viewer": "Görüntüleyici"
+    },
+    "form": {
+      "fields": {
+        "fullName": "Ad Soyad",
+        "email": "E-posta",
+        "password": "Şifre",
+        "role": "Rol"
+      },
+      "passwordHint": "En az 8 karakter.",
+      "actions": {
+        "create": "Kullanıcı oluştur",
+        "creating": "Oluşturuluyor…"
+      },
+      "errors": {
+        "fullNameRequired": "Ad Soyad zorunludur.",
+        "emailInvalid": "E-posta geçersiz.",
+        "passwordTooShort": "Şifre en az 8 karakter olmalıdır.",
+        "createFailed": "Kullanıcı oluşturulamadı.",
+        "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
+      }
+    },
+    "table": {
+      "columns": {
+        "fullName": "Ad Soyad",
+        "email": "E-posta",
+        "role": "Rol",
+        "status": "Durum"
+      },
+      "status": {
+        "active": "Aktif",
+        "inactive": "Pasif"
+      },
+      "actions": {
+        "enable": "Etkinleştir",
+        "disable": "Devre dışı bırak"
+      },
+      "empty": "Kayıt yok.",
+      "errors": {
+        "actionFailed": "İşlem başarısız.",
+        "updateFailed": "Güncelleme başarısız.",
+        "noValidFields": "Geçerli alan yok.",
+        "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
+      }
+    },
+    "details": {
+      "title": "Kullanıcı",
+      "back": "Geri",
+      "edit": "Düzenle",
+      "notFound": "Bulunamadı",
+      "fields": {
+        "fullName": "Ad Soyad",
+        "email": "E-posta",
+        "role": "Rol",
+        "status": "Durum"
+      },
+      "status": {
+        "active": "Aktif",
+        "inactive": "Pasif"
+      }
+    },
+    "edit": {
+      "title": "Kullanıcıyı düzenle",
+      "back": "Geri",
+      "notFound": "Bulunamadı",
+      "fields": {
+        "role": "Rol",
+        "status": "Durum"
+      },
+      "status": {
+        "active": "Aktif",
+        "inactive": "Pasif"
+      },
+      "actions": {
+        "save": "Kaydet",
+        "saving": "Kaydediliyor…",
+        "cancel": "İptal"
+      },
+      "errors": {
+        "updateFailed": "Güncelleme başarısız.",
+        "noValidFields": "Geçerli alan yok.",
+        "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
+      }
+    }
+  },
+  "reports": {
+    "page": {
+      "title": "Raporlar",
+      "subtitle": "Muhasebe özeti",
+      "accessDenied": "Erişim reddedildi. Bu sayfayı görüntüleme yetkiniz yok.",
+      "filters": {
+        "from": "Başlangıç",
+        "to": "Bitiş",
+        "apply": "Uygula"
+      }
+    },
+    "paymentsByMethod": {
+      "title": "Ödeme Yöntemine Göre",
+      "columns": {
+        "method": "Yöntem",
+        "total": "Toplam"
+      },
+      "empty": "Kayıt yok."
+    },
+    "topCompanies": {
+      "title": "En Çok Talep Eden Şirketler",
+      "columns": {
+        "company": "Şirket",
+        "documents": "Belge",
+        "sales": "Satış"
+      },
+      "empty": "Kayıt yok."
+    },
+    "cards": {
+      "totalDocuments": "Toplam belge",
+      "totalSales": "Toplam satış",
+      "collected": "Tahsilat",
+      "remaining": "Kalan"
+    }
+  },
+  "theme": {
+    "switchToLight": "Açık temaya geç",
+    "switchToDark": "Koyu temaya geç"
+  }
+}

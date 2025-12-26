@@ -54,8 +54,20 @@ export async function GET(
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 401 || status === 403
+        ? "forbidden"
+        : status === 404
+        ? "notFound"
+        : "listPaymentsFailed";
+
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to load payments" },
+      {
+        ok: false,
+        errorCode,
+        error: anyErr?.message ?? "Failed to load payments",
+      },
       { status }
     );
   }
@@ -74,7 +86,11 @@ export async function POST(
     const receivedAmount = Number(body?.received_amount);
     if (!Number.isFinite(receivedAmount) || receivedAmount <= 0) {
       return Response.json(
-        { ok: false, error: "received_amount must be > 0" },
+        {
+          ok: false,
+          errorCode: "invalidAmount",
+          error: "received_amount must be > 0",
+        },
         { status: 400 }
       );
     }
@@ -83,14 +99,22 @@ export async function POST(
       typeof body?.currency === "string" ? body.currency.trim() : "";
     if (!currency) {
       return Response.json(
-        { ok: false, error: "currency is required" },
+        {
+          ok: false,
+          errorCode: "invalidCurrency",
+          error: "currency is required",
+        },
         { status: 400 }
       );
     }
 
     if (!isPaymentMethod(body?.method)) {
       return Response.json(
-        { ok: false, error: "method is invalid" },
+        {
+          ok: false,
+          errorCode: "invalidPaymentMethod",
+          error: "method is invalid",
+        },
         { status: 400 }
       );
     }
@@ -100,7 +124,11 @@ export async function POST(
     const paymentDate = paymentDateRaw ? new Date(paymentDateRaw) : new Date();
     if (!Number.isFinite(paymentDate.getTime())) {
       return Response.json(
-        { ok: false, error: "payment_date is invalid" },
+        {
+          ok: false,
+          errorCode: "invalidPaymentDate",
+          error: "payment_date is invalid",
+        },
         { status: 400 }
       );
     }
@@ -139,8 +167,20 @@ export async function POST(
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 401 || status === 403
+        ? "forbidden"
+        : status === 404
+        ? "notFound"
+        : "addPaymentFailed";
+
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to add payment" },
+      {
+        ok: false,
+        errorCode,
+        error: anyErr?.message ?? "Failed to add payment",
+      },
       { status }
     );
   }

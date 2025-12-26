@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 
@@ -10,6 +11,7 @@ export function DocumentPdfActions(props: {
   hasPdf: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -28,17 +30,29 @@ export function DocumentPdfActions(props: {
       );
       const json = (await res.json().catch(() => null)) as
         | { ok: true; pdf_url: string; pdf_hash: string }
-        | { ok: false; error?: string }
+        | { ok: false; error?: string; errorCode?: string }
         | null;
 
       if (!res.ok || !json || json.ok !== true) {
-        throw new Error(json && "error" in json ? json.error ?? "" : "");
+        const code = json && "errorCode" in json ? json.errorCode : undefined;
+        const message = json && "error" in json ? json.error ?? "" : "";
+        throw new Error(code || message);
       }
 
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
-      setError(msg || "Failed to generate PDF");
+      if (msg === "notFound") {
+        setError(t("documents.details.pdfActions.errors.notFound"));
+      } else if (msg === "forbidden") {
+        setError(t("documents.details.pdfActions.errors.forbidden"));
+      } else if (msg === "generateFailed") {
+        setError(t("documents.details.pdfActions.errors.generateFailed"));
+      } else {
+        setError(
+          msg || t("documents.details.pdfActions.errors.generateFailed")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -52,19 +66,21 @@ export function DocumentPdfActions(props: {
           onClick={() => void generate()}
           disabled={loading}
         >
-          {props.hasPdf ? "Regenerate PDF" : "Generate PDF"}
+          {props.hasPdf
+            ? t("documents.details.pdfActions.regenerate")
+            : t("documents.details.pdfActions.generate")}
         </Button>
 
         {props.hasPdf ? (
           <>
             <Button asChild variant="secondary">
               <a href={viewHref} target="_blank" rel="noreferrer">
-                View PDF
+                {t("documents.details.pdfActions.viewPdf")}
               </a>
             </Button>
             <Button asChild variant="secondary">
               <a href={downloadHref} target="_blank" rel="noreferrer">
-                Download PDF
+                {t("documents.details.pdfActions.downloadPdf")}
               </a>
             </Button>
           </>

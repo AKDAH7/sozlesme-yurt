@@ -30,7 +30,11 @@ export async function PATCH(
     const docStatus = body?.doc_status;
     if (docStatus !== "active" && docStatus !== "inactive") {
       return Response.json(
-        { ok: false, error: "doc_status must be active or inactive" },
+        {
+          ok: false,
+          errorCode: "invalidDocStatus",
+          error: "doc_status must be active or inactive",
+        },
         { status: 400 }
       );
     }
@@ -49,8 +53,20 @@ export async function PATCH(
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 401 || status === 403
+        ? "forbidden"
+        : status === 404
+        ? "notFound"
+        : "updateStatusFailed";
+
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to update status" },
+      {
+        ok: false,
+        errorCode,
+        error: anyErr?.message ?? "Failed to update status",
+      },
       { status }
     );
   }

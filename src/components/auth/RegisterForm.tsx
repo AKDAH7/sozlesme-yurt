@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -14,6 +15,8 @@ type FormValues = {
 };
 
 export function RegisterForm() {
+  const t = useTranslations("auth.register");
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +46,7 @@ export function RegisterForm() {
     } | null;
 
     if (!response.ok || !data?.ok) {
-      setError(data?.error ?? "Account creation failed");
+      setError(data?.error ?? t("errors.accountCreationFailed"));
       return;
     }
 
@@ -57,7 +60,7 @@ export function RegisterForm() {
       style={{ display: "grid", gap: 12, maxWidth: 420 }}
     >
       <label style={{ display: "grid", gap: 6 }}>
-        <span>Full name</span>
+        <span>{t("fields.fullName")}</span>
         <Input
           autoComplete="name"
           {...register("fullName", { required: true })}
@@ -65,7 +68,7 @@ export function RegisterForm() {
       </label>
 
       <label style={{ display: "grid", gap: 6 }}>
-        <span>Email</span>
+        <span>{t("fields.email")}</span>
         <Input
           type="email"
           autoComplete="email"
@@ -74,7 +77,7 @@ export function RegisterForm() {
       </label>
 
       <label style={{ display: "grid", gap: 6 }}>
-        <span>Password</span>
+        <span>{t("fields.password")}</span>
         <Input
           type="password"
           autoComplete="new-password"
@@ -85,7 +88,7 @@ export function RegisterForm() {
       {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Creating…" : "Create account"}
+        {isSubmitting ? t("actions.creating") : t("actions.createAccount")}
       </Button>
     </form>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/Button";
 import { DocumentPdfActions } from "@/components/documents/DocumentDetails/DocumentPdfActions";
@@ -21,6 +22,9 @@ export default async function DocumentDetailsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = await getTranslations("documents.details");
+  const tStatus = await getTranslations("status");
+
   await requireUserId();
   const { id } = await params;
   const doc = await getDocumentById(id);
@@ -30,8 +34,8 @@ export default async function DocumentDetailsPage({
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Document</h1>
-          <p className="text-sm text-muted-foreground">{doc.reference_no}</p>
+          <h1 className="text-xl font-semibold">{t("title")}</h1>
+          value={t(`requesterType.${doc.requester_type}`)}
         </div>
         <div className="flex items-center gap-2">
           <DocumentPdfActions
@@ -39,22 +43,28 @@ export default async function DocumentDetailsPage({
             hasPdf={Boolean(doc.pdf_url && doc.pdf_hash)}
           />
           <Button asChild variant="secondary">
-            <Link href="/documents">Back</Link>
+            <Link href="/documents">{t("back")}</Link>
           </Button>
         </div>
       </div>
 
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-4">
         <Field
-          label="Reference"
+          label={t("fields.reference")}
           value={<span className="font-mono text-xs">{doc.reference_no}</span>}
         />
         <Field
-          label="Barcode"
+          label={t("fields.barcode")}
           value={<span className="font-mono text-xs">{doc.barcode_id}</span>}
         />
-        <Field label="File status" value={doc.doc_status} />
-        <Field label="Tracking" value={doc.tracking_status} />
+        <Field
+          label={t("fields.fileStatus")}
+          value={tStatus(`document.${doc.doc_status}`)}
+        />
+        <Field
+          label={t("fields.tracking")}
+          value={tStatus(`tracking.${doc.tracking_status}`)}
+        />
       </section>
 
       <DocumentManagementPanel
@@ -66,25 +76,25 @@ export default async function DocumentDetailsPage({
       />
 
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-3">
-        <Field label="Owner" value={doc.owner_full_name} />
+        <Field label={t("fields.owner")} value={doc.owner_full_name} />
         <Field
-          label="ID Number"
+          label={t("fields.idNumber")}
           value={
             <span className="font-mono text-xs">{doc.owner_identity_no}</span>
           }
         />
-        <Field label="Birth date" value={doc.owner_birth_date} />
-        <Field label="University" value={doc.university_name} />
-        <Field label="Accommodation" value={doc.dorm_name ?? "-"} />
-        <Field label="Address" value={doc.dorm_address ?? "-"} />
-        <Field label="Issue date" value={doc.issue_date} />
+        <Field label={t("fields.birthDate")} value={doc.owner_birth_date} />
+        <Field label={t("fields.university")} value={doc.university_name} />
+        <Field label={t("fields.accommodation")} value={doc.dorm_name ?? "-"} />
+        <Field label={t("fields.address")} value={doc.dorm_address ?? "-"} />
+        <Field label={t("fields.issueDate")} value={doc.issue_date} />
         <Field
-          label="Footer datetime"
+          label={t("fields.footerDatetime")}
           value={new Date(doc.footer_datetime).toLocaleString()}
         />
-        <Field label="Requester" value={doc.requester_type} />
+        <Field label={t("fields.requester")} value={doc.requester_type} />
         <Field
-          label="Company/Customer"
+          label={t("fields.companyCustomer")}
           value={
             doc.requester_type === "company"
               ? doc.company_id ?? "-"
@@ -92,12 +102,15 @@ export default async function DocumentDetailsPage({
           }
         />
         <Field
-          label="Price"
+          label={t("fields.price")}
           value={`${doc.price_amount} ${doc.price_currency}`}
         />
-        <Field label="Payment" value={doc.payment_status} />
         <Field
-          label="Created"
+          label={t("fields.payment")}
+          value={tStatus(`payment.${doc.payment_status}`)}
+        />
+        <Field
+          label={t("fields.created")}
           value={new Date(doc.created_at).toLocaleString()}
         />
       </section>

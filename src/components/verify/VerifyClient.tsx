@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -29,6 +30,10 @@ type VerifyFailResponse = {
 type VerifyResponse = VerifyOkResponse | VerifyFailResponse;
 
 export default function VerifyClient(props: { initialToken?: string }) {
+  const tVerify = useTranslations("verify");
+  const tStatus = useTranslations("status");
+  const tActions = useTranslations("actions");
+
   const [token, setToken] = useState(props.initialToken ?? "");
   const [referenceNo, setReferenceNo] = useState("");
   const [identityNo, setIdentityNo] = useState("");
@@ -69,13 +74,13 @@ export default function VerifyClient(props: { initialToken?: string }) {
 
       const data = (await res.json()) as VerifyResponse;
       if (!data.ok) {
-        setError(data.message || "Bilgiler doğrulanamadı.");
+        setError(data.message || tVerify("errors.verifyFailed"));
         return;
       }
 
       setResult(data);
     } catch {
-      setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+      setError(tVerify("errors.unknown"));
     } finally {
       setLoading(false);
     }
@@ -83,32 +88,36 @@ export default function VerifyClient(props: { initialToken?: string }) {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">Belge Doğrulama</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {tVerify("title")}
+      </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Belge doğrulamak için aşağıdaki bilgileri girin.
+        {tVerify("subtitle")}
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {props.initialToken ? null : (
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Token (opsiyonel)
+              {tVerify("tokenOptionalLabel")}
             </label>
             <Input
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder="QR ile gelen token"
+              placeholder={tVerify("tokenOptionalPlaceholder")}
               autoComplete="off"
             />
           </div>
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Referans No</label>
+          <label className="mb-1 block text-sm font-medium">
+            {tVerify("referenceNoLabel")}
+          </label>
           <Input
             value={referenceNo}
             onChange={(e) => setReferenceNo(e.target.value)}
-            placeholder="Örn: REF-2025-0001"
+            placeholder={tVerify("referenceNoPlaceholder")}
             autoComplete="off"
             required
           />
@@ -116,12 +125,12 @@ export default function VerifyClient(props: { initialToken?: string }) {
 
         <div>
           <label className="mb-1 block text-sm font-medium">
-            T.C. Kimlik No
+            {tVerify("identityNoLabel")}
           </label>
           <Input
             value={identityNo}
             onChange={(e) => setIdentityNo(e.target.value)}
-            placeholder="11 hane"
+            placeholder={tVerify("identityNoPlaceholder")}
             autoComplete="off"
             required
             inputMode="numeric"
@@ -129,7 +138,9 @@ export default function VerifyClient(props: { initialToken?: string }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Doğum Tarihi</label>
+          <label className="mb-1 block text-sm font-medium">
+            {tVerify("birthDateLabel")}
+          </label>
           <Input
             type="date"
             value={birthDate}
@@ -139,7 +150,7 @@ export default function VerifyClient(props: { initialToken?: string }) {
         </div>
 
         <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Doğrulanıyor..." : "Doğrula"}
+          {loading ? tActions("verifying") : tActions("verify")}
         </Button>
       </form>
 
@@ -153,29 +164,41 @@ export default function VerifyClient(props: { initialToken?: string }) {
         <div className="mt-6 rounded-md border p-4">
           <div className="grid gap-2 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Durum</span>
+              <span className="text-muted-foreground">
+                {tVerify("result.status")}
+              </span>
               <span className="font-medium">
-                {result.result.status === "active" ? "Aktif" : "Pasif"}
+                {tStatus(`document.${result.result.status}`)}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Referans</span>
+              <span className="text-muted-foreground">
+                {tVerify("result.reference")}
+              </span>
               <span className="font-medium">{result.result.referenceNo}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Ad Soyad</span>
+              <span className="text-muted-foreground">
+                {tVerify("result.fullName")}
+              </span>
               <span className="font-medium">{result.result.ownerFullName}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Üniversite</span>
+              <span className="text-muted-foreground">
+                {tVerify("result.university")}
+              </span>
               <span className="font-medium">
                 {result.result.universityName}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">PDF</span>
+              <span className="text-muted-foreground">
+                {tVerify("result.pdf")}
+              </span>
               <span className="font-medium">
-                {result.result.pdfReady ? "Hazır" : "Hazır değil"}
+                {result.result.pdfReady
+                  ? tStatus("pdf.ready")
+                  : tStatus("pdf.notReady")}
               </span>
             </div>
           </div>
@@ -184,19 +207,19 @@ export default function VerifyClient(props: { initialToken?: string }) {
             <div className="mt-4 flex gap-2">
               <Button asChild className="flex-1">
                 <a href={pdfUrls.view} target="_blank" rel="noreferrer">
-                  Görüntüle
+                  {tActions("view")}
                 </a>
               </Button>
               <Button asChild variant="secondary" className="flex-1">
                 <a href={pdfUrls.download} rel="noreferrer">
-                  İndir
+                  {tActions("download")}
                 </a>
               </Button>
             </div>
           ) : null}
 
           <p className="mt-4 text-xs text-muted-foreground">
-            Oturum süresi:{" "}
+            {tVerify("sessionExpires")}{" "}
             {new Date(result.verifySession.expiresAt).toLocaleString()}
           </p>
         </div>

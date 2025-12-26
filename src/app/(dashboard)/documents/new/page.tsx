@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import type { CreateDocumentRequestDto } from "@/types/dto";
 import type { RequesterType } from "@/types/db";
@@ -59,6 +60,8 @@ function SelectNative(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 }
 
 export default function NewDocumentPage() {
+  const t = useTranslations("documents.new");
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -136,7 +139,7 @@ export default function NewDocumentPage() {
     } | null;
 
     if (!response.ok || !data?.ok || !data.document?.id) {
-      setError(data?.error ?? "Create failed");
+      setError(data?.error ?? t("errors.createFailed"));
       return;
     }
 
@@ -147,24 +150,28 @@ export default function NewDocumentPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold">Create document</h1>
-        <p className="text-sm text-muted-foreground">
-          Fill required fields and click Create.
-        </p>
+        <h1 className="text-xl font-semibold">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <Section title="Owner">
+        <Section title={t("sections.owner")}>
           <label className="grid gap-1">
-            <span className="text-sm text-muted-foreground">Name</span>
+            <span className="text-sm text-muted-foreground">
+              {t("fields.name")}
+            </span>
             <Input {...register("owner_full_name", { required: true })} />
           </label>
           <label className="grid gap-1">
-            <span className="text-sm text-muted-foreground">ID number</span>
+            <span className="text-sm text-muted-foreground">
+              {t("fields.idNumber")}
+            </span>
             <Input {...register("owner_identity_no", { required: true })} />
           </label>
           <label className="grid gap-1">
-            <span className="text-sm text-muted-foreground">Date of birth</span>
+            <span className="text-sm text-muted-foreground">
+              {t("fields.birthDate")}
+            </span>
             <Input
               type="date"
               {...register("owner_birth_date", { required: true })}
@@ -172,22 +179,30 @@ export default function NewDocumentPage() {
           </label>
         </Section>
 
-        <Section title="Document">
+        <Section title={t("sections.document")}>
           <label className="grid gap-1">
-            <span className="text-sm text-muted-foreground">University</span>
+            <span className="text-sm text-muted-foreground">
+              {t("fields.university")}
+            </span>
             <Input {...register("university_name", { required: true })} />
           </label>
           <label className="grid gap-1">
-            <span className="text-sm text-muted-foreground">Accommodation</span>
+            <span className="text-sm text-muted-foreground">
+              {t("fields.accommodation")}
+            </span>
             <Input {...register("dorm_name")} />
           </label>
           <label className="grid gap-1">
-            <span className="text-sm text-muted-foreground">Address</span>
+            <span className="text-sm text-muted-foreground">
+              {t("fields.address")}
+            </span>
             <Input {...register("dorm_address")} />
           </label>
           <div className="grid gap-3 md:grid-cols-2">
             <label className="grid gap-1">
-              <span className="text-sm text-muted-foreground">Issue date</span>
+              <span className="text-sm text-muted-foreground">
+                {t("fields.issueDate")}
+              </span>
               <Input
                 type="date"
                 {...register("issue_date", { required: true })}
@@ -195,7 +210,7 @@ export default function NewDocumentPage() {
             </label>
             <label className="grid gap-1">
               <span className="text-sm text-muted-foreground">
-                Footer datetime
+                {t("fields.footerDatetime")}
               </span>
               <Input
                 type="datetime-local"
@@ -205,27 +220,29 @@ export default function NewDocumentPage() {
           </div>
         </Section>
 
-        <Section title="Requester">
+        <Section title={t("sections.requester")}>
           <label className="grid gap-1">
             <span className="text-sm text-muted-foreground">
-              Requester type
+              {t("fields.requesterType")}
             </span>
             <SelectNative {...register("requester_type", { required: true })}>
-              <option value="direct">Direct</option>
-              <option value="company">Company</option>
+              <option value="direct">{t("fields.requesterDirect")}</option>
+              <option value="company">{t("fields.requesterCompany")}</option>
             </SelectNative>
           </label>
 
           {requesterType === "company" ? (
             <label className="grid gap-1">
-              <span className="text-sm text-muted-foreground">Company ID</span>
+              <span className="text-sm text-muted-foreground">
+                {t("fields.companyId")}
+              </span>
               <Input {...register("company_id", { required: true })} />
             </label>
           ) : (
             <>
               <label className="grid gap-1">
                 <span className="text-sm text-muted-foreground">
-                  Customer name
+                  {t("fields.customerName")}
                 </span>
                 <Input
                   {...register("direct_customer_name", { required: true })}
@@ -233,7 +250,7 @@ export default function NewDocumentPage() {
               </label>
               <label className="grid gap-1">
                 <span className="text-sm text-muted-foreground">
-                  Customer phone
+                  {t("fields.customerPhone")}
                 </span>
                 <Input {...register("direct_customer_phone")} />
               </label>
@@ -241,10 +258,12 @@ export default function NewDocumentPage() {
           )}
         </Section>
 
-        <Section title="Pricing">
+        <Section title={t("sections.pricing")}>
           <div className="grid gap-3 md:grid-cols-2">
             <label className="grid gap-1">
-              <span className="text-sm text-muted-foreground">Amount</span>
+              <span className="text-sm text-muted-foreground">
+                {t("fields.amount")}
+              </span>
               <Input
                 type="number"
                 step="0.01"
@@ -255,7 +274,9 @@ export default function NewDocumentPage() {
               />
             </label>
             <label className="grid gap-1">
-              <span className="text-sm text-muted-foreground">Currency</span>
+              <span className="text-sm text-muted-foreground">
+                {t("fields.currency")}
+              </span>
               <Input {...register("price_currency", { required: true })} />
             </label>
           </div>
@@ -265,14 +286,14 @@ export default function NewDocumentPage() {
 
         <div className="flex items-center gap-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating…" : "Create"}
+            {isSubmitting ? t("actions.creating") : t("actions.create")}
           </Button>
           <Button
             type="button"
             variant="secondary"
             onClick={() => router.push("/documents")}
           >
-            Cancel
+            {t("actions.cancel")}
           </Button>
         </div>
       </form>

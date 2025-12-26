@@ -51,7 +51,10 @@ export async function POST(
 
     const doc = await getDocumentPdfData(id);
     if (!doc) {
-      return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+      return Response.json(
+        { ok: false, errorCode: "notFound", error: "Not found" },
+        { status: 404 }
+      );
     }
 
     const origin = new URL(request.url).origin;
@@ -120,8 +123,20 @@ export async function POST(
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 401 || status === 403
+        ? "forbidden"
+        : status === 404
+        ? "notFound"
+        : "generateFailed";
+
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to generate PDF" },
+      {
+        ok: false,
+        errorCode,
+        error: anyErr?.message ?? "Failed to generate PDF",
+      },
       { status }
     );
   }

@@ -20,7 +20,10 @@ export async function GET(
     const { id } = await context.params;
     const company = await getCompanyById(id);
     if (!company) {
-      return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+      return Response.json(
+        { ok: false, errorCode: "notFound", error: "Not found" },
+        { status: 404 }
+      );
     }
     return Response.json({ ok: true, company });
   } catch (err) {
@@ -28,7 +31,11 @@ export async function GET(
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to load company" },
+      {
+        ok: false,
+        errorCode: "loadFailed",
+        error: anyErr?.message ?? "Failed to load company",
+      },
       { status }
     );
   }
@@ -47,7 +54,7 @@ export async function PATCH(
       typeof body?.company_name === "string" ? body.company_name.trim() : "";
     if (!companyName) {
       return Response.json(
-        { ok: false, error: "company_name is required" },
+        { ok: false, errorCode: "companyNameRequired" },
         { status: 400 }
       );
     }
@@ -81,7 +88,11 @@ export async function PATCH(
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to update company" },
+      {
+        ok: false,
+        errorCode: "updateFailed",
+        error: anyErr?.message ?? "Failed to update company",
+      },
       { status }
     );
   }

@@ -21,7 +21,11 @@ export async function GET() {
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to list companies" },
+      {
+        ok: false,
+        errorCode: "listFailed",
+        error: anyErr?.message ?? "Failed to list companies",
+      },
       { status }
     );
   }
@@ -36,7 +40,7 @@ export async function POST(request: Request) {
       typeof body?.company_name === "string" ? body.company_name.trim() : "";
     if (!companyName) {
       return Response.json(
-        { ok: false, error: "company_name is required" },
+        { ok: false, errorCode: "companyNameRequired" },
         { status: 400 }
       );
     }
@@ -63,7 +67,11 @@ export async function POST(request: Request) {
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to create company" },
+      {
+        ok: false,
+        errorCode: "createFailed",
+        error: anyErr?.message ?? "Failed to create company",
+      },
       { status }
     );
   }

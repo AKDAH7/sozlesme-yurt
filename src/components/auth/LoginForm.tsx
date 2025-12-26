@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +14,8 @@ type FormValues = {
 };
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +44,7 @@ export function LoginForm() {
     } | null;
 
     if (!response.ok || !data?.ok) {
-      setError(data?.error ?? "Login failed");
+      setError(data?.error ?? t("errors.loginFailed"));
       return;
     }
 
@@ -55,7 +58,7 @@ export function LoginForm() {
       style={{ display: "grid", gap: 12, maxWidth: 420 }}
     >
       <label style={{ display: "grid", gap: 6 }}>
-        <span>Email</span>
+        <span>{t("fields.email")}</span>
         <Input
           type="email"
           autoComplete="email"
@@ -64,7 +67,7 @@ export function LoginForm() {
       </label>
 
       <label style={{ display: "grid", gap: 6 }}>
-        <span>Password</span>
+        <span>{t("fields.password")}</span>
         <Input
           type="password"
           autoComplete="current-password"
@@ -75,7 +78,7 @@ export function LoginForm() {
       {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Signing in…" : "Sign in"}
+        {isSubmitting ? t("actions.signingIn") : t("actions.signIn")}
       </Button>
     </form>
   );

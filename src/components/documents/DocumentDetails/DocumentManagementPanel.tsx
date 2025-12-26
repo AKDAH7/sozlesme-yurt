@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -50,11 +51,11 @@ const TRACKING_OPTIONS: TrackingStatus[] = [
   "cancelled",
 ];
 
-const PAYMENT_METHODS: Array<{ value: PaymentMethod; label: string }> = [
-  { value: "cash", label: "Cash" },
-  { value: "bank_transfer", label: "Bank transfer" },
-  { value: "card", label: "Card" },
-  { value: "other", label: "Other" },
+const PAYMENT_METHODS: PaymentMethod[] = [
+  "cash",
+  "bank_transfer",
+  "card",
+  "other",
 ];
 
 function SelectNative(
@@ -94,6 +95,10 @@ export function DocumentManagementPanel(props: {
   priceCurrency: string;
 }) {
   const router = useRouter();
+  const t = useTranslations();
+  const tDocStatus = useTranslations("status.document");
+  const tTracking = useTranslations("status.tracking");
+  const tPaymentMethod = useTranslations("status.paymentMethod");
 
   const [docStatus, setDocStatus] = React.useState<DocStatus>(
     props.initialDocStatus
@@ -129,11 +134,13 @@ export function DocumentManagementPanel(props: {
     });
     const json = (await res.json().catch(() => null)) as
       | { ok: true; history: TrackingHistoryRow[] }
-      | { ok: false; error?: string }
+      | { ok: false; error?: string; errorCode?: string }
       | null;
 
     if (!res.ok || !json || json.ok !== true) {
-      throw new Error(json && "error" in json ? json.error ?? "" : "");
+      const code = json && "errorCode" in json ? json.errorCode : undefined;
+      const message = json && "error" in json ? json.error ?? "" : "";
+      throw new Error(code || message);
     }
 
     setHistory(json.history);
@@ -145,11 +152,13 @@ export function DocumentManagementPanel(props: {
     });
     const json = (await res.json().catch(() => null)) as
       | { ok: true; summary: PaymentSummary; payments: PaymentRow[] }
-      | { ok: false; error?: string }
+      | { ok: false; error?: string; errorCode?: string }
       | null;
 
     if (!res.ok || !json || json.ok !== true) {
-      throw new Error(json && "error" in json ? json.error ?? "" : "");
+      const code = json && "errorCode" in json ? json.errorCode : undefined;
+      const message = json && "error" in json ? json.error ?? "" : "";
+      throw new Error(code || message);
     }
 
     setSummary(json.summary);
@@ -163,7 +172,17 @@ export function DocumentManagementPanel(props: {
       await Promise.all([loadTrackingHistory(), loadPayments()]);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
-      setError(msg || "Failed to load management data");
+      if (msg === "notFound") {
+        setError(t("documents.details.managementPanel.errors.notFound"));
+      } else if (msg === "forbidden") {
+        setError(t("documents.details.managementPanel.errors.forbidden"));
+      } else if (msg === "listTrackingFailed" || msg === "listPaymentsFailed") {
+        setError(t("documents.details.managementPanel.errors.loadFailed"));
+      } else {
+        setError(
+          msg || t("documents.details.managementPanel.errors.loadFailed")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -187,18 +206,37 @@ export function DocumentManagementPanel(props: {
       });
       const json = (await res.json().catch(() => null)) as
         | { ok: true; doc_status: DocStatus }
-        | { ok: false; error?: string }
+        | { ok: false; error?: string; errorCode?: string }
         | null;
 
       if (!res.ok || !json || json.ok !== true) {
-        throw new Error(json && "error" in json ? json.error ?? "" : "");
+        const code = json && "errorCode" in json ? json.errorCode : undefined;
+        const message = json && "error" in json ? json.error ?? "" : "";
+        throw new Error(code || message);
       }
 
       setDocStatus(json.doc_status);
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
-      setError(msg || "Failed to update status");
+      if (msg === "invalidDocStatus") {
+        setError(
+          t("documents.details.managementPanel.errors.invalidDocStatus")
+        );
+      } else if (msg === "notFound") {
+        setError(t("documents.details.managementPanel.errors.notFound"));
+      } else if (msg === "forbidden") {
+        setError(t("documents.details.managementPanel.errors.forbidden"));
+      } else if (msg === "updateStatusFailed") {
+        setError(
+          t("documents.details.managementPanel.errors.updateStatusFailed")
+        );
+      } else {
+        setError(
+          msg ||
+            t("documents.details.managementPanel.errors.updateStatusFailed")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -220,11 +258,13 @@ export function DocumentManagementPanel(props: {
       });
       const json = (await res.json().catch(() => null)) as
         | { ok: true; tracking_status: TrackingStatus }
-        | { ok: false; error?: string }
+        | { ok: false; error?: string; errorCode?: string }
         | null;
 
       if (!res.ok || !json || json.ok !== true) {
-        throw new Error(json && "error" in json ? json.error ?? "" : "");
+        const code = json && "errorCode" in json ? json.errorCode : undefined;
+        const message = json && "error" in json ? json.error ?? "" : "";
+        throw new Error(code || message);
       }
 
       setTrackingStatus(json.tracking_status);
@@ -233,7 +273,24 @@ export function DocumentManagementPanel(props: {
       router.refresh();
     } catch (e2) {
       const msg = e2 instanceof Error ? e2.message : "";
-      setError(msg || "Failed to update tracking");
+      if (msg === "invalidTrackingStatus") {
+        setError(
+          t("documents.details.managementPanel.errors.invalidTrackingStatus")
+        );
+      } else if (msg === "notFound") {
+        setError(t("documents.details.managementPanel.errors.notFound"));
+      } else if (msg === "forbidden") {
+        setError(t("documents.details.managementPanel.errors.forbidden"));
+      } else if (msg === "updateTrackingFailed") {
+        setError(
+          t("documents.details.managementPanel.errors.updateTrackingFailed")
+        );
+      } else {
+        setError(
+          msg ||
+            t("documents.details.managementPanel.errors.updateTrackingFailed")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -245,7 +302,11 @@ export function DocumentManagementPanel(props: {
 
     const receivedAmount = Number(paymentAmount);
     if (!Number.isFinite(receivedAmount) || receivedAmount <= 0) {
-      setError("Amount must be > 0");
+      setError(
+        t(
+          "documents.details.managementPanel.errors.amountMustBeGreaterThanZero"
+        )
+      );
       return;
     }
 
@@ -270,11 +331,13 @@ export function DocumentManagementPanel(props: {
             summary: PaymentSummary;
             payments: PaymentRow[];
           }
-        | { ok: false; error?: string }
+        | { ok: false; error?: string; errorCode?: string }
         | null;
 
       if (!res.ok || !json || json.ok !== true) {
-        throw new Error(json && "error" in json ? json.error ?? "" : "");
+        const code = json && "errorCode" in json ? json.errorCode : undefined;
+        const message = json && "error" in json ? json.error ?? "" : "";
+        throw new Error(code || message);
       }
 
       setSummary(json.summary);
@@ -287,7 +350,35 @@ export function DocumentManagementPanel(props: {
       router.refresh();
     } catch (e2) {
       const msg = e2 instanceof Error ? e2.message : "";
-      setError(msg || "Failed to add payment");
+      if (msg === "invalidAmount") {
+        setError(
+          t(
+            "documents.details.managementPanel.errors.amountMustBeGreaterThanZero"
+          )
+        );
+      } else if (msg === "invalidCurrency") {
+        setError(t("documents.details.managementPanel.errors.invalidCurrency"));
+      } else if (msg === "invalidPaymentMethod") {
+        setError(
+          t("documents.details.managementPanel.errors.invalidPaymentMethod")
+        );
+      } else if (msg === "invalidPaymentDate") {
+        setError(
+          t("documents.details.managementPanel.errors.invalidPaymentDate")
+        );
+      } else if (msg === "notFound") {
+        setError(t("documents.details.managementPanel.errors.notFound"));
+      } else if (msg === "forbidden") {
+        setError(t("documents.details.managementPanel.errors.forbidden"));
+      } else if (msg === "addPaymentFailed") {
+        setError(
+          t("documents.details.managementPanel.errors.addPaymentFailed")
+        );
+      } else {
+        setError(
+          msg || t("documents.details.managementPanel.errors.addPaymentFailed")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -304,9 +395,12 @@ export function DocumentManagementPanel(props: {
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-medium">Status</div>
+            <div className="text-sm font-medium">
+              {t("documents.details.managementPanel.status.title")}
+            </div>
             <div className="text-sm text-muted-foreground">
-              Current: <span className="font-medium">{docStatus}</span>
+              {t("documents.details.managementPanel.current")}:{" "}
+              <span className="font-medium">{tDocStatus(docStatus)}</span>
             </div>
           </div>
           <Button
@@ -315,7 +409,9 @@ export function DocumentManagementPanel(props: {
             onClick={() => void toggleDocStatus()}
             disabled={loading}
           >
-            {docStatus === "active" ? "Deactivate" : "Activate"}
+            {docStatus === "active"
+              ? t("documents.details.managementPanel.status.deactivate")
+              : t("documents.details.managementPanel.status.activate")}
           </Button>
         </div>
       </section>
@@ -323,9 +419,12 @@ export function DocumentManagementPanel(props: {
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-medium">Tracking</div>
+            <div className="text-sm font-medium">
+              {t("documents.details.managementPanel.tracking.title")}
+            </div>
             <div className="text-sm text-muted-foreground">
-              Current: <span className="font-medium">{trackingStatus}</span>
+              {t("documents.details.managementPanel.current")}:{" "}
+              <span className="font-medium">{tTracking(trackingStatus)}</span>
             </div>
           </div>
           <Button
@@ -334,7 +433,7 @@ export function DocumentManagementPanel(props: {
             onClick={() => void reloadAll()}
             disabled={loading}
           >
-            Refresh
+            {t("documents.details.managementPanel.refresh")}
           </Button>
         </div>
 
@@ -343,7 +442,9 @@ export function DocumentManagementPanel(props: {
           onSubmit={submitTrackingUpdate}
         >
           <div className="grid gap-1">
-            <div className="text-xs text-muted-foreground">New status</div>
+            <div className="text-xs text-muted-foreground">
+              {t("documents.details.managementPanel.tracking.newStatus")}
+            </div>
             <SelectNative
               value={toTrackingStatus}
               onChange={(e) =>
@@ -353,25 +454,27 @@ export function DocumentManagementPanel(props: {
             >
               {TRACKING_OPTIONS.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {tTracking(s)}
                 </option>
               ))}
             </SelectNative>
           </div>
 
           <div className="grid gap-1 md:col-span-2">
-            <div className="text-xs text-muted-foreground">Note</div>
+            <div className="text-xs text-muted-foreground">
+              {t("documents.details.managementPanel.note")}
+            </div>
             <Input
               value={trackingNote}
               onChange={(e) => setTrackingNote(e.target.value)}
-              placeholder="Optional note"
+              placeholder={t("documents.details.managementPanel.optional")}
               disabled={loading}
             />
           </div>
 
           <div className="md:col-span-3">
             <Button type="submit" disabled={loading}>
-              Update Tracking
+              {t("documents.details.managementPanel.tracking.update")}
             </Button>
           </div>
         </form>
@@ -380,11 +483,21 @@ export function DocumentManagementPanel(props: {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr className="border-b border-border">
-                <th className="px-3 py-2 text-left font-medium">When</th>
-                <th className="px-3 py-2 text-left font-medium">From</th>
-                <th className="px-3 py-2 text-left font-medium">To</th>
-                <th className="px-3 py-2 text-left font-medium">By</th>
-                <th className="px-3 py-2 text-left font-medium">Note</th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.tracking.table.when")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.tracking.table.from")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.tracking.table.to")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.tracking.table.by")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.tracking.table.note")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -393,10 +506,12 @@ export function DocumentManagementPanel(props: {
                   <td className="px-3 py-2 whitespace-nowrap">
                     {fmtDateTime(h.changed_at)}
                   </td>
-                  <td className="px-3 py-2">{h.from_status ?? "-"}</td>
-                  <td className="px-3 py-2">{h.to_status}</td>
+                  <td className="px-3 py-2">
+                    {h.from_status ? tTracking(h.from_status) : "—"}
+                  </td>
+                  <td className="px-3 py-2">{tTracking(h.to_status)}</td>
                   <td className="px-3 py-2">{h.changed_by_full_name}</td>
-                  <td className="px-3 py-2">{h.note ?? "-"}</td>
+                  <td className="px-3 py-2">{h.note ?? "—"}</td>
                 </tr>
               ))}
 
@@ -406,7 +521,7 @@ export function DocumentManagementPanel(props: {
                     className="px-3 py-6 text-center text-muted-foreground"
                     colSpan={5}
                   >
-                    No tracking history.
+                    {t("documents.details.managementPanel.tracking.empty")}
                   </td>
                 </tr>
               ) : null}
@@ -418,9 +533,12 @@ export function DocumentManagementPanel(props: {
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-sm font-medium">Payments</div>
+            <div className="text-sm font-medium">
+              {t("documents.details.managementPanel.payments.title")}
+            </div>
             <div className="text-sm text-muted-foreground">
-              Currency: <span className="font-medium">{currency}</span>
+              {t("documents.details.managementPanel.payments.currency")}:{" "}
+              <span className="font-medium">{currency}</span>
             </div>
           </div>
 
@@ -431,26 +549,36 @@ export function DocumentManagementPanel(props: {
               onClick={() => setShowAddPayment((v) => !v)}
               disabled={loading}
             >
-              {showAddPayment ? "Close" : "Add Payment"}
+              {showAddPayment
+                ? t("documents.details.managementPanel.close")
+                : t("documents.details.managementPanel.payments.addPayment")}
             </Button>
           </div>
         </div>
 
         <div className="grid gap-2 md:grid-cols-3">
           <div className="rounded-md border border-border px-3 py-2">
-            <div className="text-xs text-muted-foreground">Price</div>
+            <div className="text-xs text-muted-foreground">
+              {t("documents.details.managementPanel.payments.summary.price")}
+            </div>
             <div className="text-sm font-medium">
               {props.priceAmount} {currency}
             </div>
           </div>
           <div className="rounded-md border border-border px-3 py-2">
-            <div className="text-xs text-muted-foreground">Paid</div>
+            <div className="text-xs text-muted-foreground">
+              {t("documents.details.managementPanel.payments.summary.paid")}
+            </div>
             <div className="text-sm font-medium">
               {summary?.paid_amount ?? "0"} {currency}
             </div>
           </div>
           <div className="rounded-md border border-border px-3 py-2">
-            <div className="text-xs text-muted-foreground">Remaining</div>
+            <div className="text-xs text-muted-foreground">
+              {t(
+                "documents.details.managementPanel.payments.summary.remaining"
+              )}
+            </div>
             <div className="text-sm font-medium">
               {summary?.remaining_amount ?? props.priceAmount} {currency}
             </div>
@@ -460,7 +588,9 @@ export function DocumentManagementPanel(props: {
         {showAddPayment ? (
           <form className="grid gap-3 md:grid-cols-3" onSubmit={submitPayment}>
             <div className="grid gap-1">
-              <div className="text-xs text-muted-foreground">Amount</div>
+              <div className="text-xs text-muted-foreground">
+                {t("documents.details.managementPanel.payments.form.amount")}
+              </div>
               <Input
                 inputMode="decimal"
                 value={paymentAmount}
@@ -471,7 +601,9 @@ export function DocumentManagementPanel(props: {
             </div>
 
             <div className="grid gap-1">
-              <div className="text-xs text-muted-foreground">Method</div>
+              <div className="text-xs text-muted-foreground">
+                {t("documents.details.managementPanel.payments.form.method")}
+              </div>
               <SelectNative
                 value={paymentMethod}
                 onChange={(e) =>
@@ -480,15 +612,19 @@ export function DocumentManagementPanel(props: {
                 disabled={loading}
               >
                 {PAYMENT_METHODS.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
+                  <option key={m} value={m}>
+                    {tPaymentMethod(m)}
                   </option>
                 ))}
               </SelectNative>
             </div>
 
             <div className="grid gap-1">
-              <div className="text-xs text-muted-foreground">Payment date</div>
+              <div className="text-xs text-muted-foreground">
+                {t(
+                  "documents.details.managementPanel.payments.form.paymentDate"
+                )}
+              </div>
               <Input
                 type="date"
                 value={paymentDate}
@@ -498,28 +634,32 @@ export function DocumentManagementPanel(props: {
             </div>
 
             <div className="grid gap-1 md:col-span-1">
-              <div className="text-xs text-muted-foreground">Receipt no</div>
+              <div className="text-xs text-muted-foreground">
+                {t("documents.details.managementPanel.payments.form.receiptNo")}
+              </div>
               <Input
                 value={receiptNo}
                 onChange={(e) => setReceiptNo(e.target.value)}
-                placeholder="Optional"
+                placeholder={t("documents.details.managementPanel.optional")}
                 disabled={loading}
               />
             </div>
 
             <div className="grid gap-1 md:col-span-2">
-              <div className="text-xs text-muted-foreground">Note</div>
+              <div className="text-xs text-muted-foreground">
+                {t("documents.details.managementPanel.note")}
+              </div>
               <Input
                 value={paymentNote}
                 onChange={(e) => setPaymentNote(e.target.value)}
-                placeholder="Optional"
+                placeholder={t("documents.details.managementPanel.optional")}
                 disabled={loading}
               />
             </div>
 
             <div className="md:col-span-3">
               <Button type="submit" disabled={loading}>
-                Save Payment
+                {t("documents.details.managementPanel.payments.form.save")}
               </Button>
             </div>
           </form>
@@ -529,12 +669,26 @@ export function DocumentManagementPanel(props: {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr className="border-b border-border">
-                <th className="px-3 py-2 text-left font-medium">Date</th>
-                <th className="px-3 py-2 text-left font-medium">Amount</th>
-                <th className="px-3 py-2 text-left font-medium">Method</th>
-                <th className="px-3 py-2 text-left font-medium">Receipt</th>
-                <th className="px-3 py-2 text-left font-medium">By</th>
-                <th className="px-3 py-2 text-left font-medium">Note</th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.payments.table.date")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.payments.table.amount")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.payments.table.method")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t(
+                    "documents.details.managementPanel.payments.table.receipt"
+                  )}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.payments.table.by")}
+                </th>
+                <th className="px-3 py-2 text-left font-medium">
+                  {t("documents.details.managementPanel.payments.table.note")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -546,10 +700,10 @@ export function DocumentManagementPanel(props: {
                   <td className="px-3 py-2">
                     {p.received_amount} {p.currency}
                   </td>
-                  <td className="px-3 py-2">{p.method}</td>
-                  <td className="px-3 py-2">{p.receipt_no ?? "-"}</td>
+                  <td className="px-3 py-2">{tPaymentMethod(p.method)}</td>
+                  <td className="px-3 py-2">{p.receipt_no ?? "—"}</td>
                   <td className="px-3 py-2">{p.received_by_full_name}</td>
-                  <td className="px-3 py-2">{p.note ?? "-"}</td>
+                  <td className="px-3 py-2">{p.note ?? "—"}</td>
                 </tr>
               ))}
 
@@ -559,7 +713,7 @@ export function DocumentManagementPanel(props: {
                     className="px-3 py-6 text-center text-muted-foreground"
                     colSpan={6}
                   >
-                    No payments.
+                    {t("documents.details.managementPanel.payments.empty")}
                   </td>
                 </tr>
               ) : null}

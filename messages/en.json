@@ -1,0 +1,502 @@
+{
+  "app": {
+    "controlPanel": "Control Panel",
+    "documentIssuance": "Document issuance"
+  },
+  "language": {
+    "label": "Language",
+    "ar": "AR",
+    "tr": "TR",
+    "en": "EN"
+  },
+  "nav": {
+    "navigation": "Navigation",
+    "dashboard": "Dashboard",
+    "documents": "Documents",
+    "newDocument": "New document",
+    "reports": "Reports",
+    "templates": "Templates",
+    "companies": "Companies",
+    "users": "Users"
+  },
+  "actions": {
+    "logout": "Logout",
+    "newDocument": "New document",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "view": "View",
+    "download": "Download",
+    "toggleSidebar": "Toggle sidebar"
+  },
+  "verify": {
+    "title": "Document verification",
+    "subtitle": "Enter the information below to verify a document.",
+    "tokenOptionalLabel": "Token (optional)",
+    "tokenOptionalPlaceholder": "Token from QR",
+    "referenceNoLabel": "Reference No",
+    "referenceNoPlaceholder": "e.g. REF-2025-0001",
+    "identityNoLabel": "ID number",
+    "identityNoPlaceholder": "11 digits",
+    "birthDateLabel": "Birth date",
+    "result": {
+      "status": "Status",
+      "reference": "Reference",
+      "fullName": "Full name",
+      "university": "University",
+      "pdf": "PDF"
+    },
+    "sessionExpires": "Session expires:",
+    "errors": {
+      "verifyFailed": "Information could not be verified.",
+      "unknown": "An error occurred. Please try again."
+    }
+  },
+  "terms": {
+    "referenceNo": "Reference No",
+    "barcode": "Barcode",
+    "verification": "Verification",
+    "tracking": "Tracking",
+    "payment": "Payment"
+  },
+  "status": {
+    "document": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "payment": {
+      "unpaid": "Unpaid",
+      "partial": "Partially paid",
+      "paid": "Paid"
+    },
+    "tracking": {
+      "created": "Created",
+      "delivered_to_student": "Delivered to student",
+      "delivered_to_agent": "Delivered to agent",
+      "shipped": "Shipped",
+      "received": "Received",
+      "cancelled": "Cancelled"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "bank_transfer": "Bank transfer",
+      "card": "Card",
+      "other": "Other"
+    },
+    "pdf": {
+      "ready": "Ready",
+      "notReady": "Not ready"
+    }
+  },
+  "documents": {
+    "details": {
+      "title": "Document",
+      "back": "Back",
+      "requesterType": {
+        "company": "Company",
+        "direct": "Direct"
+      },
+      "pdfActions": {
+        "generate": "Generate PDF",
+        "regenerate": "Regenerate PDF",
+        "viewPdf": "View PDF",
+        "downloadPdf": "Download PDF",
+        "errors": {
+          "notFound": "Document not found.",
+          "forbidden": "You don't have permission to generate PDFs.",
+          "generateFailed": "Failed to generate PDF."
+        }
+      },
+      "managementPanel": {
+        "current": "Current",
+        "refresh": "Refresh",
+        "close": "Close",
+        "optional": "Optional",
+        "note": "Note",
+        "status": {
+          "title": "Status",
+          "activate": "Activate",
+          "deactivate": "Deactivate"
+        },
+        "tracking": {
+          "title": "Tracking",
+          "newStatus": "New status",
+          "update": "Update Tracking",
+          "table": {
+            "when": "When",
+            "from": "From",
+            "to": "To",
+            "by": "By",
+            "note": "Note"
+          },
+          "empty": "No tracking history."
+        },
+        "payments": {
+          "title": "Payments",
+          "currency": "Currency",
+          "addPayment": "Add Payment",
+          "summary": {
+            "price": "Price",
+            "paid": "Paid",
+            "remaining": "Remaining"
+          },
+          "form": {
+            "amount": "Amount",
+            "method": "Method",
+            "paymentDate": "Payment date",
+            "receiptNo": "Receipt no",
+            "save": "Save Payment"
+          },
+          "table": {
+            "date": "Date",
+            "amount": "Amount",
+            "method": "Method",
+            "receipt": "Receipt",
+            "by": "By",
+            "note": "Note"
+          },
+          "empty": "No payments."
+        },
+        "errors": {
+          "notFound": "Document not found.",
+          "forbidden": "You don't have permission to manage this document.",
+          "loadFailed": "Failed to load management data.",
+          "invalidDocStatus": "Invalid status.",
+          "updateStatusFailed": "Failed to update status.",
+          "invalidTrackingStatus": "Invalid tracking status.",
+          "updateTrackingFailed": "Failed to update tracking.",
+          "amountMustBeGreaterThanZero": "Amount must be greater than 0.",
+          "invalidCurrency": "Currency is required.",
+          "invalidPaymentMethod": "Invalid payment method.",
+          "invalidPaymentDate": "Invalid payment date.",
+          "addPaymentFailed": "Failed to add payment."
+        }
+      },
+      "fields": {
+        "reference": "Reference No",
+        "barcode": "Barcode",
+        "fileStatus": "File status",
+        "tracking": "Tracking",
+        "owner": "Owner",
+        "idNumber": "ID number",
+        "birthDate": "Birth date",
+        "university": "University",
+        "accommodation": "Accommodation",
+        "address": "Address",
+        "issueDate": "Issue date",
+        "footerDatetime": "Footer datetime",
+        "requester": "Requester",
+        "companyCustomer": "Company/Customer",
+        "price": "Price",
+        "payment": "Payment",
+        "created": "Created"
+      }
+    },
+    "list": {
+      "title": "Documents",
+      "total": "{total} total",
+      "createNew": "Create new",
+      "filters": {
+        "search": "Search",
+        "searchPlaceholder": "Reference, barcode, owner name, ID number",
+        "status": "Status",
+        "tracking": "Tracking",
+        "payment": "Payment",
+        "requester": "Requester",
+        "company": "Company",
+        "sort": "Sort",
+        "pageSize": "Page size",
+        "apply": "Apply",
+        "all": "All",
+        "newest": "Newest",
+        "oldest": "Oldest",
+        "requesterCompany": "Company",
+        "requesterDirect": "Direct"
+      },
+      "table": {
+        "pdf": "PDF",
+        "creator": "Creator",
+        "fileOwner": "File owner",
+        "idNumber": "ID number",
+        "reference": "Reference No",
+        "fileStatus": "File status",
+        "tracking": "Tracking",
+        "price": "Price",
+        "payment": "Payment",
+        "companyCustomer": "Company/Customer",
+        "created": "Created",
+        "empty": "No documents."
+      },
+      "pagination": {
+        "prev": "Prev",
+        "next": "Next",
+        "page": "Page {page}"
+      }
+    },
+    "new": {
+      "title": "Create document",
+      "subtitle": "Fill required fields and click Create.",
+      "sections": {
+        "owner": "Owner",
+        "document": "Document",
+        "requester": "Requester",
+        "pricing": "Pricing"
+      },
+      "fields": {
+        "name": "Name",
+        "idNumber": "ID number",
+        "birthDate": "Date of birth",
+        "university": "University",
+        "accommodation": "Accommodation",
+        "address": "Address",
+        "issueDate": "Issue date",
+        "footerDatetime": "Footer datetime",
+        "requesterType": "Requester type",
+        "requesterDirect": "Direct",
+        "requesterCompany": "Company",
+        "companyId": "Company ID",
+        "customerName": "Customer name",
+        "customerPhone": "Customer phone",
+        "amount": "Amount",
+        "currency": "Currency"
+      },
+      "actions": {
+        "create": "Create",
+        "creating": "Creating…",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "createFailed": "Create failed"
+      }
+    },
+    "preview": {
+      "title": "Document preview"
+    }
+  },
+  "dashboard": {
+    "home": {
+      "hint": "Use the sidebar to navigate."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "newHere": "New here?",
+      "createAccount": "Create an account",
+      "fields": {
+        "email": "Email",
+        "password": "Password"
+      },
+      "actions": {
+        "signIn": "Sign in",
+        "signingIn": "Signing in…"
+      },
+      "errors": {
+        "loginFailed": "Login failed"
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "alreadyHave": "Already have an account?",
+      "login": "Login",
+      "fields": {
+        "fullName": "Full name",
+        "email": "Email",
+        "password": "Password"
+      },
+      "actions": {
+        "createAccount": "Create account",
+        "creating": "Creating…"
+      },
+      "errors": {
+        "accountCreationFailed": "Account creation failed"
+      }
+    }
+  },
+  "companies": {
+    "list": {
+      "title": "Companies",
+      "total": "{total} total",
+      "create": "Create"
+    },
+    "table": {
+      "company": "Company",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "edit": "Edit",
+      "empty": "No records."
+    },
+    "form": {
+      "create": {
+        "title": "Create company",
+        "subtitle": "Add a new company"
+      },
+      "edit": {
+        "title": "Edit company",
+        "notFound": "Not found"
+      },
+      "fields": {
+        "companyName": "Company name",
+        "contactName": "Contact person",
+        "contactPhone": "Phone",
+        "contactEmail": "Email",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "companyName": "Company name",
+        "contactName": "Full name",
+        "contactPhone": "Phone",
+        "contactEmail": "email@company.com",
+        "notes": "Notes"
+      },
+      "actions": {
+        "create": "Create",
+        "update": "Update",
+        "saving": "Saving…"
+      },
+      "errors": {
+        "companyNameRequired": "Company name is required.",
+        "actionFailed": "Action failed.",
+        "unknown": "An error occurred. Please try again."
+      }
+    }
+  },
+  "users": {
+    "list": {
+      "title": "Users",
+      "total": "{total} total",
+      "create": "Create"
+    },
+    "create": {
+      "title": "Create user",
+      "subtitle": "Admin only"
+    },
+    "roles": {
+      "admin": "Admin",
+      "staff": "Staff",
+      "accounting": "Accounting",
+      "viewer": "Viewer"
+    },
+    "form": {
+      "fields": {
+        "fullName": "Full name",
+        "email": "Email",
+        "password": "Password",
+        "role": "Role"
+      },
+      "passwordHint": "At least 8 characters.",
+      "actions": {
+        "create": "Create user",
+        "creating": "Creating…"
+      },
+      "errors": {
+        "fullNameRequired": "Full name is required.",
+        "emailInvalid": "Email is invalid.",
+        "passwordTooShort": "Password must be at least 8 characters.",
+        "createFailed": "User could not be created.",
+        "unknown": "An error occurred. Please try again."
+      }
+    },
+    "table": {
+      "columns": {
+        "fullName": "Full name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable"
+      },
+      "empty": "No records.",
+      "errors": {
+        "actionFailed": "Action failed.",
+        "updateFailed": "Update failed.",
+        "noValidFields": "No valid fields.",
+        "unknown": "An error occurred. Please try again."
+      }
+    },
+    "details": {
+      "title": "User",
+      "back": "Back",
+      "edit": "Edit",
+      "notFound": "Not found",
+      "fields": {
+        "fullName": "Full name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
+    "edit": {
+      "title": "Edit user",
+      "back": "Back",
+      "notFound": "Not found",
+      "fields": {
+        "role": "Role",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "updateFailed": "Update failed.",
+        "noValidFields": "No valid fields.",
+        "unknown": "An error occurred. Please try again."
+      }
+    }
+  },
+  "reports": {
+    "page": {
+      "title": "Reports",
+      "subtitle": "Accounting summary",
+      "accessDenied": "Access denied. You don't have permission to view this page.",
+      "filters": {
+        "from": "From",
+        "to": "To",
+        "apply": "Apply"
+      }
+    },
+    "paymentsByMethod": {
+      "title": "By payment method",
+      "columns": {
+        "method": "Method",
+        "total": "Total"
+      },
+      "empty": "No records."
+    },
+    "topCompanies": {
+      "title": "Top requesting companies",
+      "columns": {
+        "company": "Company",
+        "documents": "Documents",
+        "sales": "Sales"
+      },
+      "empty": "No records."
+    },
+    "cards": {
+      "totalDocuments": "Total documents",
+      "totalSales": "Total sales",
+      "collected": "Collected",
+      "remaining": "Remaining"
+    }
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  }
+}

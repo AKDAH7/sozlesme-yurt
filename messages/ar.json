@@ -1,0 +1,503 @@
+{
+  "app": {
+    "controlPanel": "لوحة التحكم",
+    "documentIssuance": "إصدار المستندات"
+  },
+  "language": {
+    "label": "اللغة",
+    "ar": "AR",
+    "tr": "TR",
+    "en": "EN"
+  },
+  "nav": {
+    "navigation": "التنقل",
+    "dashboard": "لوحة المعلومات",
+    "documents": "المستندات",
+    "newDocument": "مستند جديد",
+    "reports": "التقارير",
+    "templates": "القوالب",
+    "companies": "الشركات",
+    "users": "المستخدمون"
+  },
+  "actions": {
+    "logout": "تسجيل الخروج",
+    "newDocument": "مستند جديد",
+    "verify": "تحقق",
+    "verifying": "جاري التحقق...",
+    "view": "عرض",
+    "download": "تنزيل",
+    "toggleSidebar": "إظهار/إخفاء الشريط الجانبي"
+  },
+  "verify": {
+    "title": "التحقق من المستند",
+    "subtitle": "أدخل المعلومات التالية للتحقق من المستند.",
+    "tokenOptionalLabel": "الرمز (اختياري)",
+    "tokenOptionalPlaceholder": "الرمز القادم من QR",
+    "referenceNoLabel": "رقم المرجع",
+    "referenceNoPlaceholder": "مثال: REF-2025-0001",
+    "identityNoLabel": "رقم الهوية",
+    "identityNoPlaceholder": "11 رقمًا",
+    "birthDateLabel": "تاريخ الميلاد",
+    "result": {
+      "status": "الحالة",
+      "reference": "المرجع",
+      "fullName": "الاسم الكامل",
+      "university": "الجامعة",
+      "pdf": "PDF"
+    },
+    "sessionExpires": "انتهاء الجلسة:",
+    "errors": {
+      "verifyFailed": "تعذر التحقق من المعلومات.",
+      "unknown": "حدث خطأ. الرجاء المحاولة مرة أخرى."
+    }
+  },
+  "terms": {
+    "referenceNo": "رقم المرجع",
+    "barcode": "الباركود",
+    "verification": "التحقق",
+    "tracking": "التتبع",
+    "payment": "الدفع"
+  },
+  "status": {
+    "document": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "payment": {
+      "unpaid": "غير مدفوع",
+      "partial": "مدفوع جزئيًا",
+      "paid": "مدفوع"
+    },
+    "tracking": {
+      "created": "تم الإنشاء",
+      "delivered_to_student": "تم التسليم للطالب",
+      "delivered_to_agent": "تم التسليم للوكيل",
+      "shipped": "تم الشحن",
+      "received": "تم الاستلام",
+      "cancelled": "ملغي"
+    },
+    "paymentMethod": {
+      "cash": "نقدًا",
+      "bank_transfer": "تحويل بنكي",
+      "card": "بطاقة",
+      "other": "أخرى"
+    },
+    "pdf": {
+      "ready": "جاهز",
+      "notReady": "غير جاهز"
+    }
+  },
+  "documents": {
+    "details": {
+      "title": "المستند",
+      "back": "رجوع",
+      "requesterType": {
+        "company": "شركة",
+        "direct": "مباشر"
+      },
+      "pdfActions": {
+        "generate": "إنشاء PDF",
+        "regenerate": "إعادة إنشاء PDF",
+        "viewPdf": "عرض PDF",
+        "downloadPdf": "تنزيل PDF",
+        "errors": {
+          "notFound": "المستند غير موجود.",
+          "forbidden": "ليس لديك صلاحية لإنشاء ملفات PDF.",
+          "generateFailed": "تعذر إنشاء ملف PDF."
+        }
+      },
+      "managementPanel": {
+        "current": "الحالي",
+        "refresh": "تحديث",
+        "close": "إغلاق",
+        "optional": "اختياري",
+        "note": "ملاحظة",
+        "status": {
+          "title": "الحالة",
+          "activate": "تفعيل",
+          "deactivate": "تعطيل"
+        },
+        "tracking": {
+          "title": "التتبع",
+          "newStatus": "الحالة الجديدة",
+          "update": "تحديث التتبع",
+          "table": {
+            "when": "الوقت",
+            "from": "من",
+            "to": "إلى",
+            "by": "بواسطة",
+            "note": "ملاحظة"
+          },
+          "empty": "لا يوجد سجل تتبع."
+        },
+        "payments": {
+          "title": "المدفوعات",
+          "currency": "العملة",
+          "addPayment": "إضافة دفعة",
+          "summary": {
+            "price": "السعر",
+            "paid": "المدفوع",
+            "remaining": "المتبقي"
+          },
+          "form": {
+            "amount": "المبلغ",
+            "method": "الطريقة",
+            "paymentDate": "تاريخ الدفع",
+            "receiptNo": "رقم الإيصال",
+            "save": "حفظ الدفعة"
+          },
+          "table": {
+            "date": "التاريخ",
+            "amount": "المبلغ",
+            "method": "الطريقة",
+            "receipt": "الإيصال",
+            "by": "المستلم",
+            "note": "ملاحظة"
+          },
+          "empty": "لا توجد مدفوعات."
+        },
+        "errors": {
+          "notFound": "المستند غير موجود.",
+          "forbidden": "ليس لديك صلاحية لإدارة هذا المستند.",
+          "loadFailed": "تعذر تحميل بيانات الإدارة.",
+          "invalidDocStatus": "حالة غير صالحة.",
+          "updateStatusFailed": "تعذر تحديث الحالة.",
+          "invalidTrackingStatus": "حالة تتبع غير صالحة.",
+          "updateTrackingFailed": "تعذر تحديث التتبع.",
+          "amountMustBeGreaterThanZero": "يجب أن يكون المبلغ أكبر من 0.",
+          "invalidCurrency": "العملة مطلوبة.",
+          "invalidPaymentMethod": "طريقة دفع غير صالحة.",
+          "invalidPaymentDate": "تاريخ دفع غير صالح.",
+          "addPaymentFailed": "تعذر إضافة دفعة."
+        }
+      },
+      "fields": {
+        "reference": "رقم المرجع",
+        "barcode": "الباركود",
+        "fileStatus": "حالة الملف",
+        "tracking": "التتبع",
+        "owner": "المالك",
+        "idNumber": "رقم الهوية",
+        "birthDate": "تاريخ الميلاد",
+        "university": "الجامعة",
+        "accommodation": "السكن",
+        "address": "العنوان",
+        "issueDate": "تاريخ الإصدار",
+        "footerDatetime": "تاريخ التذييل",
+        "requester": "الجهة الطالبة",
+        "companyCustomer": "شركة/عميل",
+        "price": "السعر",
+        "payment": "الدفع",
+        "created": "تاريخ الإنشاء"
+      }
+    },
+    "list": {
+      "title": "المستندات",
+      "total": "الإجمالي {total}",
+      "createNew": "إنشاء جديد",
+      "filters": {
+        "search": "بحث",
+        "searchPlaceholder": "رقم المرجع، الباركود، اسم المالك، رقم الهوية",
+        "status": "الحالة",
+        "tracking": "التتبع",
+        "payment": "الدفع",
+        "requester": "الجهة الطالبة",
+        "company": "الشركة",
+        "sort": "الترتيب",
+        "pageSize": "حجم الصفحة",
+        "apply": "تطبيق",
+        "all": "الكل",
+        "newest": "الأحدث",
+        "oldest": "الأقدم",
+        "requesterCompany": "شركة",
+        "requesterDirect": "مباشر"
+      },
+      "table": {
+        "pdf": "PDF",
+        "creator": "المنشئ",
+        "fileOwner": "مالك الملف",
+        "idNumber": "رقم الهوية",
+        "reference": "رقم المرجع",
+        "fileStatus": "حالة الملف",
+        "tracking": "التتبع",
+        "price": "السعر",
+        "payment": "الدفع",
+        "companyCustomer": "شركة/عميل",
+        "created": "تاريخ الإنشاء",
+        "empty": "لا توجد مستندات."
+      },
+      "pagination": {
+        "prev": "السابق",
+        "next": "التالي",
+        "page": "الصفحة {page}"
+      }
+    },
+    "new": {
+      "title": "إنشاء مستند",
+      "subtitle": "املأ الحقول المطلوبة ثم اضغط إنشاء.",
+      "sections": {
+        "owner": "المالك",
+        "newDocument": "مستند جديد",
+        "document": "المستند",
+        "requester": "الجهة الطالبة",
+        "pricing": "التسعير"
+      },
+      "fields": {
+        "name": "الاسم",
+        "idNumber": "رقم الهوية",
+        "birthDate": "تاريخ الميلاد",
+        "university": "الجامعة",
+        "accommodation": "السكن",
+        "address": "العنوان",
+        "issueDate": "تاريخ الإصدار",
+        "footerDatetime": "تاريخ التذييل",
+        "requesterType": "نوع الجهة الطالبة",
+        "requesterDirect": "مباشر",
+        "requesterCompany": "شركة",
+        "companyId": "معرّف الشركة",
+        "customerName": "اسم العميل",
+        "customerPhone": "هاتف العميل",
+        "amount": "المبلغ",
+        "currency": "العملة"
+      },
+      "actions": {
+        "create": "إنشاء",
+        "creating": "جارٍ الإنشاء…",
+        "cancel": "إلغاء"
+      },
+      "errors": {
+        "createFailed": "فشل الإنشاء"
+      }
+    },
+    "preview": {
+      "title": "معاينة المستند"
+    }
+  },
+  "dashboard": {
+    "home": {
+      "hint": "استخدم الشريط الجانبي للتنقل."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "newHere": "جديد هنا؟",
+      "createAccount": "إنشاء حساب",
+      "fields": {
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور"
+      },
+      "actions": {
+        "signIn": "تسجيل الدخول",
+        "signingIn": "جارٍ تسجيل الدخول…"
+      },
+      "errors": {
+        "loginFailed": "فشل تسجيل الدخول"
+      }
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "alreadyHave": "لديك حساب بالفعل؟",
+      "login": "تسجيل الدخول",
+      "fields": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور"
+      },
+      "actions": {
+        "createAccount": "إنشاء حساب",
+        "creating": "جارٍ الإنشاء…"
+      },
+      "errors": {
+        "accountCreationFailed": "فشل إنشاء الحساب"
+      }
+    }
+  },
+  "companies": {
+    "list": {
+      "title": "الشركات",
+      "total": "الإجمالي {total}",
+      "create": "إنشاء"
+    },
+    "table": {
+      "company": "الشركة",
+      "contact": "جهة الاتصال",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "edit": "تعديل",
+      "empty": "لا توجد سجلات."
+    },
+    "form": {
+      "create": {
+        "title": "إنشاء شركة",
+        "subtitle": "أضف شركة جديدة"
+      },
+      "edit": {
+        "title": "تعديل الشركة",
+        "notFound": "غير موجود"
+      },
+      "fields": {
+        "companyName": "اسم الشركة",
+        "contactName": "الشخص المسؤول",
+        "contactPhone": "الهاتف",
+        "contactEmail": "البريد الإلكتروني",
+        "notes": "ملاحظات"
+      },
+      "placeholders": {
+        "companyName": "اسم الشركة",
+        "contactName": "الاسم الكامل",
+        "contactPhone": "الهاتف",
+        "contactEmail": "email@company.com",
+        "notes": "ملاحظات"
+      },
+      "actions": {
+        "create": "إنشاء",
+        "update": "تحديث",
+        "saving": "جارٍ الحفظ…"
+      },
+      "errors": {
+        "companyNameRequired": "اسم الشركة مطلوب.",
+        "actionFailed": "فشلت العملية.",
+        "unknown": "حدث خطأ. الرجاء المحاولة مرة أخرى."
+      }
+    }
+  },
+  "users": {
+    "list": {
+      "title": "المستخدمون",
+      "total": "الإجمالي {total}",
+      "create": "إنشاء"
+    },
+    "create": {
+      "title": "إنشاء مستخدم",
+      "subtitle": "للمسؤول فقط"
+    },
+    "roles": {
+      "admin": "مسؤول",
+      "staff": "موظف",
+      "accounting": "محاسبة",
+      "viewer": "عارض"
+    },
+    "form": {
+      "fields": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور",
+        "role": "الدور"
+      },
+      "passwordHint": "8 أحرف على الأقل.",
+      "actions": {
+        "create": "إنشاء مستخدم",
+        "creating": "جارٍ الإنشاء…"
+      },
+      "errors": {
+        "fullNameRequired": "الاسم الكامل مطلوب.",
+        "emailInvalid": "البريد الإلكتروني غير صالح.",
+        "passwordTooShort": "يجب أن تكون كلمة المرور 8 أحرف على الأقل.",
+        "createFailed": "تعذر إنشاء المستخدم.",
+        "unknown": "حدث خطأ. الرجاء المحاولة مرة أخرى."
+      }
+    },
+    "table": {
+      "columns": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "status": "الحالة"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "actions": {
+        "enable": "تفعيل",
+        "disable": "تعطيل"
+      },
+      "empty": "لا توجد سجلات.",
+      "errors": {
+        "actionFailed": "فشلت العملية.",
+        "updateFailed": "فشل التحديث.",
+        "noValidFields": "لا توجد حقول صالحة.",
+        "unknown": "حدث خطأ. الرجاء المحاولة مرة أخرى."
+      }
+    },
+    "details": {
+      "title": "المستخدم",
+      "back": "رجوع",
+      "edit": "تعديل",
+      "notFound": "غير موجود",
+      "fields": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "status": "الحالة"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      }
+    },
+    "edit": {
+      "title": "تعديل المستخدم",
+      "back": "رجوع",
+      "notFound": "غير موجود",
+      "fields": {
+        "role": "الدور",
+        "status": "الحالة"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "actions": {
+        "save": "حفظ",
+        "saving": "جارٍ الحفظ…",
+        "cancel": "إلغاء"
+      },
+      "errors": {
+        "updateFailed": "فشل التحديث.",
+        "noValidFields": "لا توجد حقول صالحة.",
+        "unknown": "حدث خطأ. الرجاء المحاولة مرة أخرى."
+      }
+    }
+  },
+  "reports": {
+    "page": {
+      "title": "التقارير",
+      "subtitle": "ملخص المحاسبة",
+      "accessDenied": "تم رفض الوصول. ليست لديك صلاحية لعرض هذه الصفحة.",
+      "filters": {
+        "from": "من",
+        "to": "إلى",
+        "apply": "تطبيق"
+      }
+    },
+    "paymentsByMethod": {
+      "title": "حسب طريقة الدفع",
+      "columns": {
+        "method": "الطريقة",
+        "total": "الإجمالي"
+      },
+      "empty": "لا توجد سجلات."
+    },
+    "topCompanies": {
+      "title": "أكثر الشركات طلبًا",
+      "columns": {
+        "company": "الشركة",
+        "documents": "المستندات",
+        "sales": "المبيعات"
+      },
+      "empty": "لا توجد سجلات."
+    },
+    "cards": {
+      "totalDocuments": "إجمالي المستندات",
+      "totalSales": "إجمالي المبيعات",
+      "collected": "المحصل",
+      "remaining": "المتبقي"
+    }
+  },
+  "theme": {
+    "switchToLight": "التبديل إلى الوضع الفاتح",
+    "switchToDark": "التبديل إلى الوضع الداكن"
+  }
+}

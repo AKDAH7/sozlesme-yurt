@@ -1,14 +1,21 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export default function LoginPage() {
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  return <LoginPageContent />;
+}
+
+async function LoginPageContent() {
+  const t = await getTranslations("auth.login");
   return (
     <main style={{ padding: 24 }}>
-      <h1>Login</h1>
+      <h1>{t("title")}</h1>
       <LoginForm />
 
       <p style={{ marginTop: 16 }}>
-        New here? <Link href="/register">Create an account</Link>
+        {t("newHere")} <Link href="/register">{t("createAccount")}</Link>
       </p>
     </main>
   );

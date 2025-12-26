@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -42,6 +43,9 @@ export default async function DocumentsPage({
     sort?: string;
   }>;
 }) {
+  const t = await getTranslations("documents.list");
+  const tStatus = await getTranslations("status");
+
   await requireUserId();
   const sp = await searchParams;
   const page = Math.max(1, Math.floor(Number(sp.page ?? "1") || 1));
@@ -123,12 +127,14 @@ export default async function DocumentsPage({
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Documents</h1>
-          <p className="text-sm text-muted-foreground">{`${total} total`}</p>
+          <h1 className="text-xl font-semibold">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("total", { total })}
+          </p>
         </div>
 
         <Button asChild>
-          <Link href="/documents/new">Create New</Link>
+          <Link href="/documents/new">{t("createNew")}</Link>
         </Button>
       </div>
 
@@ -138,16 +144,20 @@ export default async function DocumentsPage({
         className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-6"
       >
         <div className="md:col-span-2">
-          <div className="text-xs text-muted-foreground">Search</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.search")}
+          </div>
           <Input
             name="q"
             defaultValue={q}
-            placeholder="Reference, barcode, owner name, ID number"
+            placeholder={t("filters.searchPlaceholder")}
           />
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground">Status</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.status")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -156,14 +166,16 @@ export default async function DocumentsPage({
             name="status"
             defaultValue={status}
           >
-            <option value="">All</option>
-            <option value="active">active</option>
-            <option value="inactive">inactive</option>
+            <option value="">{t("filters.all")}</option>
+            <option value="active">{tStatus("document.active")}</option>
+            <option value="inactive">{tStatus("document.inactive")}</option>
           </select>
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground">Tracking</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.tracking")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -172,18 +184,24 @@ export default async function DocumentsPage({
             name="tracking_status"
             defaultValue={trackingStatus}
           >
-            <option value="">All</option>
-            <option value="created">created</option>
-            <option value="shipped">shipped</option>
-            <option value="received">received</option>
-            <option value="delivered_to_student">delivered_to_student</option>
-            <option value="delivered_to_agent">delivered_to_agent</option>
-            <option value="cancelled">cancelled</option>
+            <option value="">{t("filters.all")}</option>
+            <option value="created">{tStatus("tracking.created")}</option>
+            <option value="shipped">{tStatus("tracking.shipped")}</option>
+            <option value="received">{tStatus("tracking.received")}</option>
+            <option value="delivered_to_student">
+              {tStatus("tracking.delivered_to_student")}
+            </option>
+            <option value="delivered_to_agent">
+              {tStatus("tracking.delivered_to_agent")}
+            </option>
+            <option value="cancelled">{tStatus("tracking.cancelled")}</option>
           </select>
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground">Payment</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.payment")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -192,15 +210,17 @@ export default async function DocumentsPage({
             name="payment_status"
             defaultValue={paymentStatus}
           >
-            <option value="">All</option>
-            <option value="unpaid">unpaid</option>
-            <option value="partial">partial</option>
-            <option value="paid">paid</option>
+            <option value="">{t("filters.all")}</option>
+            <option value="unpaid">{tStatus("payment.unpaid")}</option>
+            <option value="partial">{tStatus("payment.partial")}</option>
+            <option value="paid">{tStatus("payment.paid")}</option>
           </select>
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground">Requester</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.requester")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -209,14 +229,16 @@ export default async function DocumentsPage({
             name="requester_type"
             defaultValue={requesterType}
           >
-            <option value="">All</option>
-            <option value="company">company</option>
-            <option value="direct">direct</option>
+            <option value="">{t("filters.all")}</option>
+            <option value="company">{t("filters.requesterCompany")}</option>
+            <option value="direct">{t("filters.requesterDirect")}</option>
           </select>
         </div>
 
         <div className="md:col-span-2">
-          <div className="text-xs text-muted-foreground">Company</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.company")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -225,7 +247,7 @@ export default async function DocumentsPage({
             name="company_id"
             defaultValue={companyId}
           >
-            <option value="">All</option>
+            <option value="">{t("filters.all")}</option>
             {companies.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.company_name}
@@ -235,7 +257,9 @@ export default async function DocumentsPage({
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground">Sort</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.sort")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -244,13 +268,15 @@ export default async function DocumentsPage({
             name="sort"
             defaultValue={sortDir}
           >
-            <option value="desc">Newest</option>
-            <option value="asc">Oldest</option>
+            <option value="desc">{t("filters.newest")}</option>
+            <option value="asc">{t("filters.oldest")}</option>
           </select>
         </div>
 
         <div>
-          <div className="text-xs text-muted-foreground">Page size</div>
+          <div className="text-xs text-muted-foreground">
+            {t("filters.pageSize")}
+          </div>
           <select
             className={cn(
               "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
@@ -266,7 +292,7 @@ export default async function DocumentsPage({
         </div>
 
         <div className="flex items-end gap-2 md:col-span-2">
-          <Button type="submit">Apply</Button>
+          <Button type="submit">{t("filters.apply")}</Button>
         </div>
       </form>
 
@@ -274,19 +300,39 @@ export default async function DocumentsPage({
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr className="border-b border-border">
-              <th className="px-3 py-2 text-left font-medium">PDF</th>
-              <th className="px-3 py-2 text-left font-medium">Creator</th>
-              <th className="px-3 py-2 text-left font-medium">File Owner</th>
-              <th className="px-3 py-2 text-left font-medium">ID Number</th>
-              <th className="px-3 py-2 text-left font-medium">Reference</th>
-              <th className="px-3 py-2 text-left font-medium">File Status</th>
-              <th className="px-3 py-2 text-left font-medium">Tracking</th>
-              <th className="px-3 py-2 text-left font-medium">Price</th>
-              <th className="px-3 py-2 text-left font-medium">Payment</th>
               <th className="px-3 py-2 text-left font-medium">
-                Company/Customer
+                {t("table.pdf")}
               </th>
-              <th className="px-3 py-2 text-left font-medium">Created</th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.creator")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.fileOwner")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.idNumber")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.reference")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.fileStatus")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.tracking")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.price")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.payment")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.companyCustomer")}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("table.created")}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -312,16 +358,18 @@ export default async function DocumentsPage({
                   {r.reference_no}
                 </td>
                 <td className="px-3 py-2">
-                  <StatusPill value={r.doc_status} />
+                  <StatusPill value={tStatus(`document.${r.doc_status}`)} />
                 </td>
                 <td className="px-3 py-2">
-                  <StatusPill value={r.tracking_status} />
+                  <StatusPill
+                    value={tStatus(`tracking.${r.tracking_status}`)}
+                  />
                 </td>
                 <td className="px-3 py-2">
                   {r.price_amount} {r.price_currency}
                 </td>
                 <td className="px-3 py-2">
-                  <StatusPill value={r.payment_status} />
+                  <StatusPill value={tStatus(`payment.${r.payment_status}`)} />
                 </td>
                 <td className="px-3 py-2">
                   {r.company_name ?? r.direct_customer_name ?? "-"}
@@ -338,7 +386,7 @@ export default async function DocumentsPage({
                   className="px-3 py-6 text-center text-muted-foreground"
                   colSpan={11}
                 >
-                  No documents.
+                  {t("table.empty")}
                 </td>
               </tr>
             ) : null}
@@ -349,15 +397,17 @@ export default async function DocumentsPage({
       <div className="flex items-center justify-between">
         <Button asChild variant="secondary" disabled={!canPrev}>
           <Link href={prevHref} aria-disabled={!canPrev}>
-            Prev
+            {t("pagination.prev")}
           </Link>
         </Button>
 
-        <div className="text-sm text-muted-foreground">Page {page}</div>
+        <div className="text-sm text-muted-foreground">
+          {t("pagination.page", { page })}
+        </div>
 
         <Button asChild variant="secondary" disabled={!canNext}>
           <Link href={nextHref} aria-disabled={!canNext}>
-            Next
+            {t("pagination.next")}
           </Link>
         </Button>
       </div>

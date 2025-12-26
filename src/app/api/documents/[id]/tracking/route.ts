@@ -47,9 +47,18 @@ export async function GET(
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 401 || status === 403
+        ? "forbidden"
+        : status === 404
+        ? "notFound"
+        : "listTrackingFailed";
+
     return Response.json(
       {
         ok: false,
+        errorCode,
         error: anyErr?.message ?? "Failed to load tracking history",
       },
       { status }
@@ -68,7 +77,11 @@ export async function PATCH(
     const body = (await request.json().catch(() => null)) as Body | null;
     if (!isTrackingStatus(body?.to_status)) {
       return Response.json(
-        { ok: false, error: "to_status is invalid" },
+        {
+          ok: false,
+          errorCode: "invalidTrackingStatus",
+          error: "to_status is invalid",
+        },
         { status: 400 }
       );
     }
@@ -93,8 +106,20 @@ export async function PATCH(
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 401 || status === 403
+        ? "forbidden"
+        : status === 404
+        ? "notFound"
+        : "updateTrackingFailed";
+
     return Response.json(
-      { ok: false, error: anyErr?.message ?? "Failed to update tracking" },
+      {
+        ok: false,
+        errorCode,
+        error: anyErr?.message ?? "Failed to update tracking",
+      },
       { status }
     );
   }

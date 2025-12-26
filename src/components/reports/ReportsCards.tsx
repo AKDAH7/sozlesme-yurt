@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
 
 function ReportCard(props: { title: string; value: string; subtle?: string }) {
   return (
@@ -20,8 +23,11 @@ export function ReportsCards(props: {
     remaining: string;
   };
 }) {
+  const t = useTranslations("reports.cards");
+  const locale = useLocale();
+
   const format = (value: string) =>
-    new Intl.NumberFormat("tr-TR", {
+    new Intl.NumberFormat(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(Number(value || 0));
@@ -29,19 +35,19 @@ export function ReportsCards(props: {
   return (
     <div className="grid gap-3 md:grid-cols-4">
       <ReportCard
-        title="Toplam Belge"
+        title={t("totalDocuments")}
         value={String(props.summary.total_documents)}
       />
       <ReportCard
-        title="Toplam Satış"
+        title={t("totalSales")}
         value={`${format(props.summary.total_sales)} TRY`}
       />
       <ReportCard
-        title="Tahsilat"
+        title={t("collected")}
         value={`${format(props.summary.total_collected)} TRY`}
       />
       <ReportCard
-        title="Kalan"
+        title={t("remaining")}
         value={`${format(props.summary.remaining)} TRY`}
       />
     </div>

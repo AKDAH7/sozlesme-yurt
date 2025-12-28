@@ -12,11 +12,19 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const t = await getTranslations("documents.edit");
-  await requirePermission("documents:create");
+  const { role, companyId } = await requirePermission("documents:create");
 
   const { id } = await params;
   const doc = await getDocumentById(id);
   if (!doc) return notFound();
+
+  if (role === "company") {
+    if (!companyId || doc.company_id !== companyId) {
+      return notFound();
+    }
+  }
+
+  const isCompanyUser = role === "company";
 
   return (
     <div className="space-y-4">
@@ -32,6 +40,7 @@ export default async function Page({
       </div>
 
       <DocumentEditClient
+        isCompanyUser={isCompanyUser}
         initial={{
           id: doc.id,
           reference_no: doc.reference_no,

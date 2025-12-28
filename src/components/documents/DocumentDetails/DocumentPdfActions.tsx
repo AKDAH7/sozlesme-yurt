@@ -9,14 +9,16 @@ import { Button } from "@/components/ui/Button";
 export function DocumentPdfActions(props: {
   documentId: string;
   hasPdf: boolean;
+  canGeneratePdf?: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const viewHref = `/api/documents/${props.documentId}/pdf`;
   const downloadHref = `/api/documents/${props.documentId}/pdf?download=1`;
+
+  const canGenerate = props.canGeneratePdf !== false;
 
   async function generate() {
     setError(null);
@@ -67,29 +69,24 @@ export function DocumentPdfActions(props: {
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          onClick={() => void generate()}
-          disabled={loading}
-        >
-          {props.hasPdf
-            ? t("documents.details.pdfActions.regenerate")
-            : t("documents.details.pdfActions.generate")}
-        </Button>
+        {canGenerate ? (
+          <Button
+            type="button"
+            onClick={() => void generate()}
+            disabled={loading}
+          >
+            {props.hasPdf
+              ? t("documents.details.pdfActions.regenerate")
+              : t("documents.details.pdfActions.generate")}
+          </Button>
+        ) : null}
 
         {props.hasPdf ? (
-          <>
-            <Button asChild variant="secondary">
-              <a href={viewHref} target="_blank" rel="noreferrer">
-                {t("documents.details.pdfActions.viewPdf")}
-              </a>
-            </Button>
-            <Button asChild variant="secondary">
-              <a href={downloadHref} target="_blank" rel="noreferrer">
-                {t("documents.details.pdfActions.downloadPdf")}
-              </a>
-            </Button>
-          </>
+          <Button asChild variant="secondary">
+            <a href={downloadHref} target="_blank" rel="noreferrer">
+              {t("documents.details.pdfActions.downloadPdf")}
+            </a>
+          </Button>
         ) : null}
       </div>
 

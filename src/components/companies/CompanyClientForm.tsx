@@ -8,10 +8,14 @@ import { Input } from "@/components/ui/Input";
 
 export type CompanyFormValues = {
   company_name: string;
+  ref_code: string;
   contact_name: string;
   contact_phone: string;
   contact_email: string;
   notes: string;
+  account_email: string;
+  account_full_name: string;
+  account_password: string;
 };
 
 export default function CompanyClientForm(props: {
@@ -20,13 +24,19 @@ export default function CompanyClientForm(props: {
   initialValues?: Partial<CompanyFormValues>;
 }) {
   const t = useTranslations("companies.form");
+  const tAccount = useTranslations("companies.account");
 
   const [values, setValues] = useState<CompanyFormValues>({
     company_name: props.initialValues?.company_name ?? "",
+    ref_code: props.initialValues?.ref_code ?? "",
     contact_name: props.initialValues?.contact_name ?? "",
     contact_phone: props.initialValues?.contact_phone ?? "",
     contact_email: props.initialValues?.contact_email ?? "",
     notes: props.initialValues?.notes ?? "",
+    // Only used on create. Keep these empty for edit mode.
+    account_email: props.initialValues?.account_email ?? "",
+    account_full_name: props.initialValues?.account_full_name ?? "",
+    account_password: props.initialValues?.account_password ?? "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -39,6 +49,20 @@ export default function CompanyClientForm(props: {
     if (!values.company_name.trim()) {
       setError(t("errors.companyNameRequired"));
       return;
+    }
+
+    if (props.mode === "create") {
+      if (!values.account_email.trim()) {
+        setError(tAccount("errors.emailRequired"));
+        return;
+      }
+      if (
+        !values.account_password.trim() ||
+        values.account_password.length < 6
+      ) {
+        setError(tAccount("errors.passwordTooShort"));
+        return;
+      }
     }
 
     setLoading(true);
@@ -54,10 +78,20 @@ export default function CompanyClientForm(props: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           company_name: values.company_name.trim(),
+          ref_code: values.ref_code.trim(),
           contact_name: values.contact_name.trim(),
           contact_phone: values.contact_phone.trim(),
           contact_email: values.contact_email.trim(),
           notes: values.notes.trim(),
+          ...(props.mode === "create"
+            ? {
+                account_email: values.account_email.trim(),
+                account_full_name: (values.account_full_name.trim() ||
+                  values.contact_name.trim() ||
+                  values.company_name.trim()) as string,
+                account_password: values.account_password,
+              }
+            : {}),
         }),
       });
 
@@ -71,6 +105,18 @@ export default function CompanyClientForm(props: {
         const code = data.errorCode;
         if (code === "companyNameRequired") {
           setError(t("errors.companyNameRequired"));
+          return;
+        }
+        if (code === "emailRequired") {
+          setError(tAccount("errors.emailRequired"));
+          return;
+        }
+        if (code === "passwordTooShort") {
+          setError(tAccount("errors.passwordTooShort"));
+          return;
+        }
+        if (code === "emailInUse") {
+          setError(tAccount("errors.emailInUse"));
           return;
         }
         if (code === "createFailed" || code === "updateFailed") {
@@ -126,6 +172,23 @@ export default function CompanyClientForm(props: {
             }
             placeholder={t("placeholders.contactName")}
           />
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              {t("fields.refCode")}
+            </label>
+            <Input
+              value={values.ref_code}
+              onChange={(e) =>
+                setValues((p) => ({ ...p, ref_code: e.target.value }))
+              }
+              placeholder={t("placeholders.refCode")}
+              autoComplete="off"
+            />
+            <div className="mt-1 text-xs text-muted-foreground">
+              {t("hints.refCode")}
+            </div>
+          </div>
         </div>
         <div>
           <div className="text-xs text-muted-foreground">
@@ -153,6 +216,60 @@ export default function CompanyClientForm(props: {
           placeholder={t("placeholders.contactEmail")}
         />
       </div>
+
+      {props.mode === "create" ? (
+        <div className="space-y-3 rounded-md border border-border bg-background p-3">
+          <div>
+            <div className="text-sm font-medium">{tAccount("title")}</div>
+            <div className="text-xs text-muted-foreground">
+              {tAccount("subtitle")}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">
+              {tAccount("fields.email")}
+            </div>
+            <Input
+              value={values.account_email}
+              onChange={(e) =>
+                setValues((v) => ({ ...v, account_email: e.target.value }))
+              }
+              placeholder={
+                values.contact_email || t("placeholders.contactEmail")
+              }
+              required
+            />
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">
+              {tAccount("fields.fullName")}
+            </div>
+            <Input
+              value={values.account_full_name}
+              onChange={(e) =>
+                setValues((v) => ({ ...v, account_full_name: e.target.value }))
+              }
+              placeholder={values.contact_name || values.company_name}
+            />
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground">
+              {tAccount("fields.password")}
+            </div>
+            <Input
+              value={values.account_password}
+              onChange={(e) =>
+                setValues((v) => ({ ...v, account_password: e.target.value }))
+              }
+              type="password"
+              required
+            />
+          </div>
+        </div>
+      ) : null}
 
       <div>
         <div className="text-xs text-muted-foreground">{t("fields.notes")}</div>

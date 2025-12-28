@@ -1,15 +1,36 @@
 import { requirePermission } from "@/lib/auth/permissions";
-import { createCompany, listCompanies } from "@/lib/db/queries/companies";
+import { hashPassword } from "@/lib/auth/password";
+import {
+  createCompanyWithAccount,
+  listCompanies,
+} from "@/lib/db/queries/companies";
+import { getUserByEmail } from "@/lib/db/queries/users";
 
 export const runtime = "nodejs";
 
 type PostBody = {
   company_name?: unknown;
+  ref_code?: unknown;
   contact_name?: unknown;
   contact_phone?: unknown;
   contact_email?: unknown;
   notes?: unknown;
+  account_email?: unknown;
+  account_full_name?: unknown;
+  account_password?: unknown;
 };
+
+function normalizeRefCode(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const v = value.trim().toUpperCase();
+  if (!v) return null;
+  if (!/^[A-Z]{2,4}$/.test(v)) {
+    throw Object.assign(new Error("ref_code must be 2-4 letters (A-Z)"), {
+      status: 400,
+    });
+  }
+  return v;
+}
 
 export async function GET() {
   try {
@@ -53,17 +74,60 @@ export async function POST(request: Request) {
       typeof body?.contact_email === "string" ? body.contact_email.trim() : "";
     const notes = typeof body?.notes === "string" ? body.notes.trim() : "";
 
-    const created = await createCompany({
+    const refCode = normalizeRefCode(body?.ref_code);
+
+    const accountEmail =
+      typeof body?.account_email === "string" ? body.account_email.trim() : "";
+    const accountPassword =
+      typeof body?.account_password === "string" ? body.account_password : "";
+    const accountFullName =
+      typeof body?.account_full_name === "string"
+        ? body.account_full_name.trim()
+        : "";
+
+    if (!accountEmail) {
+      return Response.json(
+        { ok: false, errorCode: "emailRequired" },
+        { status: 400 }
+      );
+    }
+
+    if (!accountPassword || accountPassword.trim().length < 6) {
+      return Response.json(
+        { ok: false, errorCode: "passwordTooShort" },
+        { status: 400 }
+      );
+    }
+
+    const existing = await getUserByEmail(accountEmail);
+    if (existing) {
+      return Response.json(
+        { ok: false, errorCode: "emailInUse" },
+        { status: 409 }
+      );
+    }
+
+    const passwordHash = await hashPassword(accountPassword.trim());
+
+    const created = await createCompanyWithAccount({
       companyName,
+      refCode,
       contactName: contactName || null,
       contactPhone: contactPhone || null,
       contactEmail: contactEmail || null,
       notes: notes || null,
+      accountEmail,
+      accountFullName: accountFullName || contactName || companyName,
+      accountPasswordHash: passwordHash,
     });
 
-    return Response.json({ ok: true, id: created.id });
+    return Response.json({ ok: true, id: created.companyId });
   } catch (err) {
-    const anyErr = err as { status?: number; message?: string } | null;
+    const anyErr = err as {
+      status?: number;
+      message?: string;
+      code?: string;
+    } | null;
     const status =
       anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
     return Response.json(

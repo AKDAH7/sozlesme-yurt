@@ -22,12 +22,23 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await requirePermission("documents:read");
+    const { userId, role, companyId } = await requirePermission(
+      "documents:read"
+    );
     const { id } = await context.params;
 
     const doc = await getDocumentPdfData(id);
     if (!doc) {
       return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+    }
+
+    if (role === "company") {
+      if (!companyId || doc.company_id !== companyId) {
+        return Response.json(
+          { ok: false, error: "Forbidden" },
+          { status: 403 }
+        );
+      }
     }
     if (!doc.pdf_url || !doc.pdf_hash) {
       return Response.json(

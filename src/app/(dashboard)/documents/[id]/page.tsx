@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/Button";
 import { DocumentPdfActions } from "@/components/documents/DocumentDetails/DocumentPdfActions";
 import { DocumentManagementPanel } from "@/components/documents/DocumentDetails/DocumentManagementPanel";
+import { requirePermission } from "@/lib/auth/permissions";
 import { getDocumentById } from "@/lib/db/queries/documents";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
@@ -24,20 +25,30 @@ export default async function DocumentDetailsPage({
   const t = await getTranslations("documents.details");
   const tStatus = await getTranslations("status");
   const { id } = await params;
+
+  const { role, companyId } = await requirePermission("documents:read");
   const doc = await getDocumentById(id);
   if (!doc) return notFound();
+
+  if (role === "company") {
+    if (!companyId || doc.company_id !== companyId) {
+      return notFound();
+    }
+  }
+
+  const isCompanyUser = role === "company";
 
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">{t("title")}</h1>
-          value={t(`requesterType.${doc.requester_type}`)}
         </div>
         <div className="flex items-center gap-2">
           <DocumentPdfActions
             documentId={doc.id}
             hasPdf={Boolean(doc.pdf_url && doc.pdf_hash)}
+            canGeneratePdf={!isCompanyUser}
           />
           <Button asChild variant="secondary">
             <Link href={`/documents/${doc.id}/edit`}>{t("actions.edit")}</Link>
@@ -73,6 +84,7 @@ export default async function DocumentDetailsPage({
         initialTrackingStatus={doc.tracking_status}
         priceAmount={doc.price_amount}
         priceCurrency={doc.price_currency}
+        canManage={!isCompanyUser}
       />
 
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-3">
@@ -92,15 +104,19 @@ export default async function DocumentDetailsPage({
           label={t("fields.footerDatetime")}
           value={new Date(doc.footer_datetime).toLocaleString()}
         />
-        <Field label={t("fields.requester")} value={doc.requester_type} />
-        <Field
-          label={t("fields.companyCustomer")}
-          value={
-            doc.requester_type === "company"
-              ? doc.company_id ?? "-"
-              : doc.direct_customer_name ?? "-"
-          }
-        />
+        {!isCompanyUser ? (
+          <>
+            <Field label={t("fields.requester")} value={doc.requester_type} />
+            <Field
+              label={t("fields.companyCustomer")}
+              value={
+                doc.requester_type === "company"
+                  ? doc.company_id ?? "-"
+                  : doc.direct_customer_name ?? "-"
+              }
+            />
+          </>
+        ) : null}
         <Field
           label={t("fields.price")}
           value={`${doc.price_amount} ${doc.price_currency}`}

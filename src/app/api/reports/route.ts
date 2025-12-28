@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    await requirePermission("reports:view");
+    const { role, companyId } = await requirePermission("reports:view");
 
     const url = new URL(request.url);
     const range = parseReportRange({
@@ -18,10 +18,15 @@ export async function GET(request: Request) {
       to: url.searchParams.get("to"),
     });
 
+    const scoped =
+      role === "company"
+        ? { ...range, companyId: companyId ?? null }
+        : { ...range, companyId: null };
+
     const [summary, paymentsByMethod, topCompanies] = await Promise.all([
-      getReportsSummary(range),
-      getPaymentsByMethod(range),
-      getTopRequestingCompanies({ ...range, limit: 10 }),
+      getReportsSummary(scoped),
+      getPaymentsByMethod(scoped),
+      getTopRequestingCompanies({ ...scoped, limit: 10 }),
     ]);
 
     return Response.json({

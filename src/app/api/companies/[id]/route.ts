@@ -5,11 +5,24 @@ export const runtime = "nodejs";
 
 type PatchBody = {
   company_name?: unknown;
+  ref_code?: unknown;
   contact_name?: unknown;
   contact_phone?: unknown;
   contact_email?: unknown;
   notes?: unknown;
 };
+
+function normalizeRefCode(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const v = value.trim().toUpperCase();
+  if (!v) return null;
+  if (!/^[A-Z]{2,4}$/.test(v)) {
+    throw Object.assign(new Error("ref_code must be 2-4 letters (A-Z)"), {
+      status: 400,
+    });
+  }
+  return v;
+}
 
 export async function GET(
   _request: Request,
@@ -67,10 +80,13 @@ export async function PATCH(
       typeof body?.contact_email === "string" ? body.contact_email.trim() : "";
     const notes = typeof body?.notes === "string" ? body.notes.trim() : "";
 
+    const refCode = normalizeRefCode(body?.ref_code);
+
     const updated = await updateCompany({
       id,
       input: {
         companyName,
+        refCode,
         contactName: contactName || null,
         contactPhone: contactPhone || null,
         contactEmail: contactEmail || null,

@@ -28,6 +28,32 @@
     "download": "Download",
     "toggleSidebar": "Toggle sidebar"
   },
+  "notifications": {
+    "menu": {
+      "ariaLabel": "Notifications",
+      "title": "Notifications",
+      "refresh": "Refresh",
+      "loading": "Loading…",
+      "empty": "No notifications."
+    },
+    "errors": {
+      "loadFailed": "Failed to load notifications."
+    },
+    "items": {
+      "pdf_generated": {
+        "title": "PDF generated",
+        "message": "PDF is ready for {referenceNo}."
+      },
+      "company_requested_document": {
+        "title": "Document request",
+        "message": "{companyName} requested document {referenceNo}."
+      },
+      "company_requested_modifications": {
+        "title": "Modification request",
+        "message": "The company updated {referenceNo}."
+      }
+    }
+  },
   "verify": {
     "title": "Document verification",
     "subtitle": "Enter the information below to verify a document.",
@@ -293,7 +319,20 @@
   },
   "dashboard": {
     "home": {
-      "hint": "Use the sidebar to navigate."
+      "hint": "Use the sidebar to navigate.",
+      "requestsTitle": "Company requests awaiting approval",
+      "requestsEmpty": "No pending requests.",
+      "requestsActions": {
+        "title": "Actions",
+        "generatePdf": "Generate PDF",
+        "regeneratePdf": "Regenerate PDF",
+        "generating": "Generating…",
+        "approve": "Approve",
+        "approving": "Approving…",
+        "errors": {
+          "generic": "Action failed"
+        }
+      }
     }
   },
   "auth": {
@@ -339,6 +378,7 @@
     },
     "table": {
       "company": "Company",
+      "code": "Code",
       "contact": "Contact",
       "phone": "Phone",
       "email": "Email",
@@ -356,6 +396,7 @@
       },
       "fields": {
         "companyName": "Company name",
+        "refCode": "Reference code",
         "contactName": "Contact person",
         "contactPhone": "Phone",
         "contactEmail": "Email",
@@ -363,10 +404,14 @@
       },
       "placeholders": {
         "companyName": "Company name",
+        "refCode": "Optional (e.g. EN)",
         "contactName": "Full name",
         "contactPhone": "Phone",
         "contactEmail": "email@company.com",
         "notes": "Notes"
+      },
+      "hints": {
+        "refCode": "Optional. 2–4 letters (A–Z). Used in document reference numbers."
       },
       "actions": {
         "create": "Create",
@@ -377,6 +422,59 @@
         "companyNameRequired": "Company name is required.",
         "actionFailed": "Action failed.",
         "unknown": "An error occurred. Please try again."
+      }
+    },
+    "account": {
+      "title": "Company account",
+      "subtitle": "Create a login for this company.",
+      "loading": "Loading...",
+      "fields": {
+        "email": "Email",
+        "fullName": "Full name",
+        "password": "Password"
+      },
+      "actions": {
+        "create": "Create account",
+        "creating": "Creating...",
+        "update": "Update",
+        "saving": "Saving..."
+      },
+      "success": {
+        "created": "Account created. You can now login with this email/password.",
+        "updated": "Account updated."
+      },
+      "errors": {
+        "emailRequired": "Email is required.",
+        "passwordTooShort": "Password must be at least 6 characters.",
+        "emailInUse": "This email is already in use.",
+        "alreadyExists": "An account already exists for this company.",
+        "actionFailed": "Action failed.",
+        "unknown": "Unknown error."
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Set per-template prices for this company. If not set, the default price is used for new documents.",
+      "loading": "Loading...",
+      "empty": "No templates found.",
+      "default": {
+        "title": "Default price (new documents)",
+        "amount": "Amount",
+        "currency": "Currency"
+      },
+      "table": {
+        "template": "Template",
+        "price": "Price"
+      },
+      "actions": {
+        "saveDefault": "Save default",
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "errors": {
+        "loadFailed": "Failed to load pricing.",
+        "saveFailed": "Failed to save.",
+        "amountInvalid": "Amount must be a non-negative number."
       }
     }
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
@@ -33,15 +33,50 @@ export default function VerifyClient(props: { initialToken?: string }) {
   const tVerify = useTranslations("verify");
   const tStatus = useTranslations("status");
   const tActions = useTranslations("actions");
+  const tPdfActions = useTranslations("documents.details.pdfActions");
 
   const [token, setToken] = useState(props.initialToken ?? "");
   const [referenceNo, setReferenceNo] = useState("");
   const [identityNo, setIdentityNo] = useState("");
-  const [birthDate, setBirthDate] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<VerifyOkResponse | null>(null);
+
+  useEffect(() => {
+    if (!props.initialToken) return;
+    let cancelled = false;
+
+    async function prefill() {
+      try {
+        const res = await fetch(
+          `/api/documents/verify/prefill?token=${encodeURIComponent(
+            props.initialToken ?? ""
+          )}`,
+          { cache: "no-store" }
+        );
+        const json = (await res.json().catch(() => null)) as
+          | {
+              ok: true;
+              referenceNo: string;
+              identityNo: string;
+            }
+          | { ok: false; error?: string }
+          | null;
+        if (!res.ok || !json || json.ok !== true) return;
+        if (cancelled) return;
+        setReferenceNo((v) => v || json.referenceNo);
+        setIdentityNo((v) => v || json.identityNo);
+      } catch {
+        // ignore
+      }
+    }
+
+    void prefill();
+    return () => {
+      cancelled = true;
+    };
+  }, [props.initialToken]);
 
   const pdfUrls = useMemo(() => {
     if (!result) return null;
@@ -49,7 +84,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
       result.result.documentId
     )}/pdf/public?session=${encodeURIComponent(result.verifySession.token)}`;
     return {
-      view: base,
       download: `${base}&download=1`,
     };
   }, [result]);
@@ -68,7 +102,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
           token: token.trim() ? token.trim() : undefined,
           referenceNo: referenceNo.trim(),
           identityNo: identityNo.trim(),
-          birthDate: birthDate.trim(),
         }),
       });
 
@@ -96,20 +129,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        {props.initialToken ? null : (
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              {tVerify("tokenOptionalLabel")}
-            </label>
-            <Input
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder={tVerify("tokenOptionalPlaceholder")}
-              autoComplete="off"
-            />
-          </div>
-        )}
-
         <div>
           <label className="mb-1 block text-sm font-medium">
             {tVerify("referenceNoLabel")}
@@ -134,18 +153,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
             autoComplete="off"
             required
             inputMode="numeric"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium">
-            {tVerify("birthDateLabel")}
-          </label>
-          <Input
-            type="date"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            required
           />
         </div>
 
@@ -205,23 +212,13 @@ export default function VerifyClient(props: { initialToken?: string }) {
 
           {result.result.pdfReady && pdfUrls ? (
             <div className="mt-4 flex gap-2">
-              <Button asChild className="flex-1">
-                <a href={pdfUrls.view} target="_blank" rel="noreferrer">
-                  {tActions("view")}
-                </a>
-              </Button>
               <Button asChild variant="secondary" className="flex-1">
                 <a href={pdfUrls.download} rel="noreferrer">
-                  {tActions("download")}
+                  {tPdfActions("downloadPdf")}
                 </a>
               </Button>
             </div>
           ) : null}
-
-          <p className="mt-4 text-xs text-muted-foreground">
-            {tVerify("sessionExpires")}{" "}
-            {new Date(result.verifySession.expiresAt).toLocaleString()}
-          </p>
         </div>
       ) : null}
     </main>

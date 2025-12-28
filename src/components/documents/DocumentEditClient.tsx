@@ -157,9 +157,14 @@ function toDatetimeLocalValue(iso: string): string {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
-export function DocumentEditClient(props: { initial: DocumentEditDto }) {
+export function DocumentEditClient(props: {
+  initial: DocumentEditDto;
+  isCompanyUser?: boolean;
+}) {
   const t = useTranslations("documents.edit");
   const tNew = useTranslations("documents.new");
+
+  const isCompanyUser = Boolean(props.isCompanyUser);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -190,7 +195,7 @@ export function DocumentEditClient(props: { initial: DocumentEditDto }) {
   );
 
   const [requesterType, setRequesterType] = useState<"company" | "direct">(
-    props.initial.requester_type
+    isCompanyUser ? "company" : props.initial.requester_type
   );
   const [companyId, setCompanyId] = useState(props.initial.company_id ?? "");
   const [directCustomerName, setDirectCustomerName] = useState(
@@ -242,12 +247,23 @@ export function DocumentEditClient(props: { initial: DocumentEditDto }) {
         dorm_address: dormAddress || null,
         issue_date: issueDate,
         footer_datetime: footerDatetime,
-        requester_type: requesterType,
-        company_id: requesterType === "company" ? companyId : null,
-        direct_customer_name:
-          requesterType === "direct" ? directCustomerName : null,
-        direct_customer_phone:
-          requesterType === "direct" ? directCustomerPhone : null,
+        requester_type: isCompanyUser ? "company" : requesterType,
+        // For company users, server derives company_id from session.
+        company_id: isCompanyUser
+          ? null
+          : requesterType === "company"
+          ? companyId
+          : null,
+        direct_customer_name: isCompanyUser
+          ? null
+          : requesterType === "direct"
+          ? directCustomerName
+          : null,
+        direct_customer_phone: isCompanyUser
+          ? null
+          : requesterType === "direct"
+          ? directCustomerPhone
+          : null,
         price_amount: Number(priceAmount),
         price_currency: priceCurrency,
 
@@ -366,75 +382,77 @@ export function DocumentEditClient(props: { initial: DocumentEditDto }) {
         </div>
       </section>
 
-      <section className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-2">
-        <div className="grid gap-1">
-          <div className="text-xs text-muted-foreground">
-            {tNew("fields.requesterType")}
-          </div>
-          <select
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-            value={requesterType}
-            onChange={(e) =>
-              setRequesterType(e.target.value as "company" | "direct")
-            }
-          >
-            <option value="direct">{tNew("fields.requesterDirect")}</option>
-            <option value="company">{tNew("fields.requesterCompany")}</option>
-          </select>
-        </div>
-
-        {requesterType === "company" ? (
+      {!isCompanyUser ? (
+        <section className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-2">
           <div className="grid gap-1">
             <div className="text-xs text-muted-foreground">
-              {tNew("fields.companyId")}
+              {tNew("fields.requesterType")}
+            </div>
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+              value={requesterType}
+              onChange={(e) =>
+                setRequesterType(e.target.value as "company" | "direct")
+              }
+            >
+              <option value="direct">{tNew("fields.requesterDirect")}</option>
+              <option value="company">{tNew("fields.requesterCompany")}</option>
+            </select>
+          </div>
+
+          {requesterType === "company" ? (
+            <div className="grid gap-1">
+              <div className="text-xs text-muted-foreground">
+                {tNew("fields.companyId")}
+              </div>
+              <Input
+                value={companyId}
+                onChange={(e) => setCompanyId(e.target.value)}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-1">
+                <div className="text-xs text-muted-foreground">
+                  {tNew("fields.customerName")}
+                </div>
+                <Input
+                  value={directCustomerName}
+                  onChange={(e) => setDirectCustomerName(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-1">
+                <div className="text-xs text-muted-foreground">
+                  {tNew("fields.customerPhone")}
+                </div>
+                <Input
+                  value={directCustomerPhone}
+                  onChange={(e) => setDirectCustomerPhone(e.target.value)}
+                />
+              </div>
+            </>
+          )}
+
+          <div className="grid gap-1">
+            <div className="text-xs text-muted-foreground">
+              {tNew("fields.amount")}
             </div>
             <Input
-              value={companyId}
-              onChange={(e) => setCompanyId(e.target.value)}
+              value={priceAmount}
+              onChange={(e) => setPriceAmount(e.target.value)}
             />
           </div>
-        ) : (
-          <>
-            <div className="grid gap-1">
-              <div className="text-xs text-muted-foreground">
-                {tNew("fields.customerName")}
-              </div>
-              <Input
-                value={directCustomerName}
-                onChange={(e) => setDirectCustomerName(e.target.value)}
-              />
+          <div className="grid gap-1">
+            <div className="text-xs text-muted-foreground">
+              {tNew("fields.currency")}
             </div>
-            <div className="grid gap-1">
-              <div className="text-xs text-muted-foreground">
-                {tNew("fields.customerPhone")}
-              </div>
-              <Input
-                value={directCustomerPhone}
-                onChange={(e) => setDirectCustomerPhone(e.target.value)}
-              />
-            </div>
-          </>
-        )}
-
-        <div className="grid gap-1">
-          <div className="text-xs text-muted-foreground">
-            {tNew("fields.amount")}
+            <Input
+              value={priceCurrency}
+              onChange={(e) => setPriceCurrency(e.target.value)}
+            />
           </div>
-          <Input
-            value={priceAmount}
-            onChange={(e) => setPriceAmount(e.target.value)}
-          />
-        </div>
-        <div className="grid gap-1">
-          <div className="text-xs text-muted-foreground">
-            {tNew("fields.currency")}
-          </div>
-          <Input
-            value={priceCurrency}
-            onChange={(e) => setPriceCurrency(e.target.value)}
-          />
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {error ? <div className="text-sm text-destructive">{error}</div> : null}
 

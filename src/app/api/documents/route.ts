@@ -12,8 +12,13 @@ import type {
 import { requirePermission } from "@/lib/auth/permissions";
 import { companyExists } from "@/lib/db/queries/companies";
 import { createDocument, listDocuments } from "@/lib/db/queries/documents";
+import { getCompanyById } from "@/lib/db/queries/companies";
+import { getEffectivePrice } from "@/lib/db/queries/pricing";
 import { getTemplateDetails } from "@/lib/db/queries/templates";
+import { createNotification } from "@/lib/db/queries/notifications";
 import { validateCreateDocumentBody } from "@/lib/validation/documents";
+
+export const runtime = "nodejs";
 
 function hasPresetValue(preset: unknown): preset is string | number {
   if (typeof preset === "number") return Number.isFinite(preset);
@@ -42,12 +47,26 @@ function getRequestMeta(request: Request): {
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await requirePermission("documents:create");
+    const { userId, role, companyId } = await requirePermission(
+      "documents:create"
+    );
     const body = (await request
       .json()
       .catch(() => null)) as CreateDocumentRequestDto | null;
 
-    const validated = validateCreateDocumentBody(body);
+    const isCompanyUser = role === "company";
+
+    // Company accounts should not need to send requester/company fields.
+    // Inject them from the session before validation.
+    const bodyForValidation: CreateDocumentRequestDto | null = isCompanyUser
+      ? ({
+          ...(body ?? ({} as CreateDocumentRequestDto)),
+          requester_type: "company",
+          company_id: companyId ?? null,
+        } satisfies CreateDocumentRequestDto as CreateDocumentRequestDto)
+      : body;
+
+    const validated = validateCreateDocumentBody(bodyForValidation);
 
     let templateId: string | null = null;
     let templateVersion: number | null = null;
@@ -87,8 +106,31 @@ export async function POST(request: Request) {
       templateValues = nextValues;
     }
 
-    if (validated.requesterType === "company") {
-      const ok = await companyExists(validated.companyId!);
+    if (isCompanyUser && !companyId) {
+      return Response.json(
+        { ok: false, error: "company account is missing company_id" },
+        { status: 400 }
+      );
+    }
+
+    const requesterType: RequesterType = isCompanyUser
+      ? "company"
+      : validated.requesterType;
+    const resolvedCompanyId = isCompanyUser
+      ? companyId ?? null
+      : validated.requesterType === "company"
+      ? validated.companyId
+      : null;
+
+    if (requesterType === "company") {
+      if (!resolvedCompanyId) {
+        return Response.json(
+          { ok: false, error: "company account is missing company_id" },
+          { status: 400 }
+        );
+      }
+
+      const ok = await companyExists(resolvedCompanyId);
       if (!ok) {
         return Response.json(
           { ok: false, error: "company_id does not exist" },
@@ -96,6 +138,14 @@ export async function POST(request: Request) {
         );
       }
     }
+
+    const effectivePrice =
+      requesterType === "company" && resolvedCompanyId
+        ? await getEffectivePrice({
+            companyId: resolvedCompanyId,
+            templateId,
+          })
+        : { amount: validated.priceAmount, currency: validated.priceCurrency };
 
     const meta = getRequestMeta(request);
     const created = await createDocument({
@@ -109,19 +159,17 @@ export async function POST(request: Request) {
         dormAddress: validated.dormAddress,
         issueDate: validated.issueDate,
         footerDatetime: validated.footerDatetime,
-        requesterType: validated.requesterType,
-        companyId:
-          validated.requesterType === "company" ? validated.companyId : null,
+
+        // Company-submitted requests must be reviewed by an admin.
+        docStatus: isCompanyUser ? "inactive" : "active",
+        requesterType,
+        companyId: requesterType === "company" ? resolvedCompanyId : null,
         directCustomerName:
-          validated.requesterType === "direct"
-            ? validated.directCustomerName
-            : null,
+          requesterType === "direct" ? validated.directCustomerName : null,
         directCustomerPhone:
-          validated.requesterType === "direct"
-            ? validated.directCustomerPhone
-            : null,
-        priceAmount: validated.priceAmount,
-        priceCurrency: validated.priceCurrency,
+          requesterType === "direct" ? validated.directCustomerPhone : null,
+        priceAmount: effectivePrice.amount,
+        priceCurrency: effectivePrice.currency,
 
         templateId,
         templateVersion,
@@ -145,6 +193,22 @@ export async function POST(request: Request) {
       },
     };
 
+    // Company-submitted documents are requests that admins should review.
+    if (isCompanyUser && resolvedCompanyId) {
+      const company = await getCompanyById(resolvedCompanyId).catch(() => null);
+      const companyName = company?.company_name ?? "Company";
+      await createNotification({
+        targetRole: "admin",
+        title: "kind:company_requested_document",
+        message: JSON.stringify({
+          companyName,
+          referenceNo: created.reference_no,
+        }),
+        href: `/documents/${created.id}`,
+        createdByUserId: userId,
+      }).catch(() => undefined);
+    }
+
     return Response.json(response);
   } catch (err) {
     const anyErr = err as { status?: number; message?: string } | null;
@@ -159,7 +223,9 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    await requirePermission("documents:read");
+    const { role, companyId: userCompanyId } = await requirePermission(
+      "documents:read"
+    );
     const url = new URL(request.url);
     const page = Number(url.searchParams.get("page") ?? "1");
     const pageSize = Number(url.searchParams.get("pageSize") ?? "20");
@@ -205,6 +271,16 @@ export async function GET(request: Request) {
 
     const sortDir: "asc" | "desc" = sortDirParam === "asc" ? "asc" : "desc";
 
+    const isCompanyUser = role === "company";
+
+    if (isCompanyUser && !userCompanyId) {
+      return Response.json(
+        { ok: false, error: "company account is missing company_id" },
+        { status: 400 }
+      );
+    }
+    const scopedCompanyId = isCompanyUser ? userCompanyId ?? "" : companyId;
+
     const { rows, total } = await listDocuments({
       page,
       pageSize,
@@ -213,7 +289,7 @@ export async function GET(request: Request) {
       trackingStatus,
       paymentStatus,
       requesterType,
-      companyId,
+      companyId: scopedCompanyId,
       sortDir,
     });
 

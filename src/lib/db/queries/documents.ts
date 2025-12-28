@@ -11,6 +11,7 @@ import type {
 } from "@/types/db";
 import { getPool } from "@/lib/db/pool";
 import { insertDocumentAuditLog } from "@/lib/security/audit";
+import { getCompanyRefCodeById } from "@/lib/db/queries/companies";
 
 export type DocumentRow = {
   id: string;
@@ -148,6 +149,10 @@ export type CreateDocumentInput = {
   directCustomerName: string | null;
   directCustomerPhone: string | null;
 
+  // Optional: used for workflows where a document requires approval.
+  // Defaults to 'active' if not provided.
+  docStatus?: DocStatus;
+
   priceAmount: number;
   priceCurrency: string;
 
@@ -184,19 +189,41 @@ function generateBarcodeId(now = new Date()): string {
   return `GCGM${yy}${mm}${dd}-${randomDigits(6)}`;
 }
 
-function generateReferenceNo(now = new Date()): string {
+function normalizeCompanyRefCode(value: string | null | undefined): string {
+  const raw = (value ?? "").trim().toUpperCase();
+  if (!raw) return "";
+
+  // Requested example: entering EN produces REF-EM-...
+  if (raw === "EN") return "EM";
+
+  return /^[A-Z]{2,4}$/.test(raw) ? raw : "";
+}
+
+function generateReferenceNo(
+  now = new Date(),
+  companyRefCode?: string | null
+): string {
   const yyyymmdd = `${now.getUTCFullYear()}${String(
     now.getUTCMonth() + 1
   ).padStart(2, "0")}${String(now.getUTCDate()).padStart(2, "0")}`;
-  return `REF-${yyyymmdd}-${randomDigits(6)}`;
+  const hhmmss = `${String(now.getUTCHours()).padStart(2, "0")}${String(
+    now.getUTCMinutes()
+  ).padStart(2, "0")}${String(now.getUTCSeconds()).padStart(2, "0")}`;
+
+  const code = normalizeCompanyRefCode(companyRefCode ?? null);
+  return code
+    ? `REF-${code}-${yyyymmdd}-${hhmmss}`
+    : `REF-${yyyymmdd}-${hhmmss}`;
 }
 
-export function generateCreateDocumentIdentifiers(): CreateDocumentGenerated {
+export function generateCreateDocumentIdentifiers(params?: {
+  companyRefCode?: string | null;
+}): CreateDocumentGenerated {
   const now = new Date();
   return {
     token: generateToken(),
     barcodeId: generateBarcodeId(now),
-    referenceNo: generateReferenceNo(now),
+    referenceNo: generateReferenceNo(now, params?.companyRefCode ?? null),
   };
 }
 
@@ -223,8 +250,16 @@ export async function createDocument(params: {
   const pool = getPool();
   const maxAttempts = 5;
 
+  const companyRefCode = params.generated
+    ? null
+    : params.input.requesterType === "company" && params.input.companyId
+    ? await getCompanyRefCodeById(params.input.companyId).catch(() => null)
+    : null;
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const generated = params.generated ?? generateCreateDocumentIdentifiers();
+    const generated =
+      params.generated ??
+      generateCreateDocumentIdentifiers({ companyRefCode: companyRefCode });
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -241,6 +276,7 @@ export async function createDocument(params: {
 						created_by_user_id,
 						owner_full_name, owner_identity_no, owner_birth_date,
 						university_name, dorm_name, dorm_address, issue_date, footer_datetime,
+						doc_status,
 						requester_type, company_id, direct_customer_name, direct_customer_phone,
 						price_amount, price_currency,
 						template_id, template_version, template_values
@@ -250,9 +286,10 @@ export async function createDocument(params: {
 						$4,
 						$5, $6, $7,
 						$8, $9, $10, $11, $12,
-						$13, $14, $15, $16,
-						$17, $18,
-						$19, $20, $21::jsonb
+						$13,
+						$14, $15, $16, $17,
+						$18, $19,
+						$20, $21, $22::jsonb
 					)
 					RETURNING id, token, barcode_id, reference_no, created_at`,
         [
@@ -268,6 +305,7 @@ export async function createDocument(params: {
           params.input.dormAddress,
           params.input.issueDate,
           params.input.footerDatetime,
+          params.input.docStatus ?? "active",
           params.input.requesterType,
           params.input.companyId,
           params.input.directCustomerName,

@@ -119,6 +119,32 @@
     "download": "تنزيل",
     "toggleSidebar": "إظهار/إخفاء الشريط الجانبي"
   },
+  "notifications": {
+    "menu": {
+      "ariaLabel": "الإشعارات",
+      "title": "الإشعارات",
+      "refresh": "تحديث",
+      "loading": "جارٍ التحميل…",
+      "empty": "لا توجد إشعارات."
+    },
+    "errors": {
+      "loadFailed": "تعذر تحميل الإشعارات."
+    },
+    "items": {
+      "pdf_generated": {
+        "title": "تم إنشاء PDF",
+        "message": "ملف PDF جاهز للمستند {referenceNo}."
+      },
+      "company_requested_document": {
+        "title": "طلب مستند",
+        "message": "طلبت {companyName} مستندًا برقم {referenceNo}."
+      },
+      "company_requested_modifications": {
+        "title": "طلب تعديل",
+        "message": "قامت الشركة بتحديث المستند {referenceNo}."
+      }
+    }
+  },
   "verify": {
     "title": "التحقق من المستند",
     "subtitle": "أدخل المعلومات التالية للتحقق من المستند.",
@@ -385,7 +411,20 @@
   },
   "dashboard": {
     "home": {
-      "hint": "استخدم الشريط الجانبي للتنقل."
+      "hint": "استخدم الشريط الجانبي للتنقل.",
+      "requestsTitle": "طلبات الشركات بانتظار الموافقة",
+      "requestsEmpty": "لا توجد طلبات معلّقة.",
+      "requestsActions": {
+        "title": "إجراءات",
+        "generatePdf": "إنشاء PDF",
+        "regeneratePdf": "إعادة إنشاء PDF",
+        "generating": "جارٍ الإنشاء…",
+        "approve": "اعتماد",
+        "approving": "جارٍ الاعتماد…",
+        "errors": {
+          "generic": "فشل الإجراء"
+        }
+      }
     }
   },
   "auth": {
@@ -431,6 +470,7 @@
     },
     "table": {
       "company": "الشركة",
+      "code": "الرمز",
       "contact": "جهة الاتصال",
       "phone": "الهاتف",
       "email": "البريد الإلكتروني",
@@ -448,6 +488,7 @@
       },
       "fields": {
         "companyName": "اسم الشركة",
+        "refCode": "رمز المرجع",
         "contactName": "الشخص المسؤول",
         "contactPhone": "الهاتف",
         "contactEmail": "البريد الإلكتروني",
@@ -455,10 +496,14 @@
       },
       "placeholders": {
         "companyName": "اسم الشركة",
+        "refCode": "اختياري (مثل EN)",
         "contactName": "الاسم الكامل",
         "contactPhone": "الهاتف",
         "contactEmail": "email@company.com",
         "notes": "ملاحظات"
+      },
+      "hints": {
+        "refCode": "اختياري. من 2 إلى 4 أحرف (A–Z). يُستخدم ضمن رقم المرجع للمستند."
       },
       "actions": {
         "create": "إنشاء",
@@ -469,6 +514,59 @@
         "companyNameRequired": "اسم الشركة مطلوب.",
         "actionFailed": "فشلت العملية.",
         "unknown": "حدث خطأ. الرجاء المحاولة مرة أخرى."
+      }
+    },
+    "account": {
+      "title": "حساب الشركة",
+      "subtitle": "أنشئ بيانات دخول لهذه الشركة.",
+      "loading": "جارٍ التحميل...",
+      "fields": {
+        "email": "البريد الإلكتروني",
+        "fullName": "الاسم الكامل",
+        "password": "كلمة المرور"
+      },
+      "actions": {
+        "create": "إنشاء حساب",
+        "creating": "جارٍ الإنشاء...",
+        "update": "تحديث",
+        "saving": "جارٍ الحفظ..."
+      },
+      "success": {
+        "created": "تم إنشاء الحساب. يمكنك الآن تسجيل الدخول باستخدام البريد/كلمة المرور.",
+        "updated": "تم تحديث الحساب."
+      },
+      "errors": {
+        "emailRequired": "البريد الإلكتروني مطلوب.",
+        "passwordTooShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل.",
+        "emailInUse": "هذا البريد مستخدم بالفعل.",
+        "alreadyExists": "يوجد حساب لهذه الشركة بالفعل.",
+        "actionFailed": "فشلت العملية.",
+        "unknown": "خطأ غير معروف."
+      }
+    },
+    "pricing": {
+      "title": "التسعير",
+      "subtitle": "حدد سعرًا لكل قالب لهذه الشركة. إذا لم يتم التحديد، سيتم استخدام السعر الافتراضي للوثائق الجديدة.",
+      "loading": "جارٍ التحميل...",
+      "empty": "لا توجد قوالب.",
+      "default": {
+        "title": "السعر الافتراضي (للوثائق الجديدة)",
+        "amount": "المبلغ",
+        "currency": "العملة"
+      },
+      "table": {
+        "template": "القالب",
+        "price": "السعر"
+      },
+      "actions": {
+        "saveDefault": "حفظ الافتراضي",
+        "save": "حفظ",
+        "saving": "جارٍ الحفظ..."
+      },
+      "errors": {
+        "loadFailed": "فشل تحميل التسعير.",
+        "saveFailed": "فشل الحفظ.",
+        "amountInvalid": "يجب أن يكون المبلغ رقمًا غير سالب."
       }
     }
   },
@@ -578,8 +676,7 @@
       "accessDenied": "تم رفض الوصول. ليست لديك صلاحية لعرض هذه الصفحة.",
       "filters": {
         "from": "من",
-        "to": "إلى",
-        "apply": "تطبيق"
+        "to": "إلى"
       }
     },
     "paymentsByMethod": {

@@ -27,7 +27,7 @@ export async function insertVerificationAttempt(params: {
   token: string | null;
   referenceNo: string | null;
   identityNoHash: string | null;
-  birthDate: string | null; // YYYY-MM-DD
+  birthDate: string | null; // YYYY-MM-DD (optional; kept for history)
 }): Promise<void> {
   const pool = getPool();
   await pool.query(
@@ -115,7 +115,6 @@ export async function createVerifySession(params: {
 export async function verifyDocumentMatch(params: {
   identityNo: string;
   referenceNo: string;
-  birthDate: string; // YYYY-MM-DD
   token?: string;
 }): Promise<VerifyMatchRow | null> {
   const pool = getPool();
@@ -134,9 +133,8 @@ export async function verifyDocumentMatch(params: {
       WHERE d.token = $1
         AND d.reference_no = $2
         AND d.owner_identity_no = $3
-        AND d.owner_birth_date = $4::date
       LIMIT 1`,
-      [params.token, params.referenceNo, params.identityNo, params.birthDate]
+      [params.token, params.referenceNo, params.identityNo]
     );
     return result.rows[0] ?? null;
   }
@@ -153,12 +151,31 @@ export async function verifyDocumentMatch(params: {
       d.pdf_hash
      FROM documents d
      WHERE d.reference_no = $1
-       AND d.owner_identity_no = $2
-       AND d.owner_birth_date = $3::date
+         AND d.owner_identity_no = $2
      LIMIT 1`,
-    [params.referenceNo, params.identityNo, params.birthDate]
+    [params.referenceNo, params.identityNo]
   );
   return result.rows[0] ?? null;
+}
+
+export async function getVerifyPrefillByToken(params: {
+  token: string;
+}): Promise<{ referenceNo: string; identityNo: string } | null> {
+  const pool = getPool();
+  const result = await pool.query<{
+    reference_no: string;
+    owner_identity_no: string;
+  }>(
+    `SELECT reference_no, owner_identity_no
+       FROM documents
+       WHERE token = $1
+       LIMIT 1`,
+    [params.token]
+  );
+
+  const row = result.rows[0];
+  if (!row?.reference_no || !row?.owner_identity_no) return null;
+  return { referenceNo: row.reference_no, identityNo: row.owner_identity_no };
 }
 
 export async function getVerifySessionDocument(params: {

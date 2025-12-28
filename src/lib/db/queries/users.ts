@@ -1,6 +1,6 @@
 import { getPool } from "@/lib/db/pool";
 
-export type UserRole = "admin" | "staff" | "accounting" | "viewer";
+export type UserRole = "admin" | "staff" | "accounting" | "viewer" | "company";
 
 export type UserRow = {
   id: string;
@@ -8,6 +8,7 @@ export type UserRow = {
   email: string;
   password_hash: string;
   role: UserRole;
+  company_id: string | null;
   is_active: boolean;
   last_login_at: string | null;
   created_at: string;
@@ -19,6 +20,7 @@ export type UserMinimalRow = {
   full_name: string;
   email: string;
   role: UserRole;
+  company_id: string | null;
   is_active: boolean;
   last_login_at: string | null;
   created_at: string;
@@ -34,6 +36,7 @@ export async function getUserByIdMinimal(
             full_name,
             email::text as email,
             role,
+            company_id,
             is_active,
             last_login_at::text as last_login_at,
             created_at::text as created_at,
@@ -53,6 +56,7 @@ export async function listUsers(): Promise<UserMinimalRow[]> {
             full_name,
             email::text as email,
             role,
+            company_id,
             is_active,
             last_login_at::text as last_login_at,
             created_at::text as created_at,
@@ -108,7 +112,7 @@ export async function updateUserRole(params: {
 export async function getUserByEmail(email: string): Promise<UserRow | null> {
   const pool = getPool();
   const result = await pool.query<UserRow>(
-    `SELECT id, full_name, email::text as email, password_hash, role, is_active, last_login_at, created_at, updated_at
+    `SELECT id, full_name, email::text as email, password_hash, role, company_id, is_active, last_login_at, created_at, updated_at
 		 FROM users
 		 WHERE email = $1
 		 LIMIT 1`,
@@ -116,6 +120,78 @@ export async function getUserByEmail(email: string): Promise<UserRow | null> {
   );
 
   return result.rows[0] ?? null;
+}
+
+export async function getCompanyAccountByCompanyId(
+  companyId: string
+): Promise<Pick<
+  UserRow,
+  "id" | "full_name" | "email" | "role" | "company_id" | "is_active"
+> | null> {
+  const pool = getPool();
+  const result = await pool.query<
+    Pick<
+      UserRow,
+      "id" | "full_name" | "email" | "role" | "company_id" | "is_active"
+    >
+  >(
+    `SELECT id, full_name, email::text as email, role, company_id, is_active
+     FROM users
+     WHERE role = 'company'
+       AND company_id = $1
+     ORDER BY created_at ASC
+     LIMIT 1`,
+    [companyId]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateUserAccount(params: {
+  userId: string;
+  email?: string | null;
+  fullName?: string | null;
+  passwordHash?: string | null;
+}): Promise<
+  Pick<
+    UserRow,
+    | "id"
+    | "full_name"
+    | "email"
+    | "role"
+    | "company_id"
+    | "is_active"
+    | "updated_at"
+  >
+> {
+  const pool = getPool();
+  const result = await pool.query<
+    Pick<
+      UserRow,
+      | "id"
+      | "full_name"
+      | "email"
+      | "role"
+      | "company_id"
+      | "is_active"
+      | "updated_at"
+    >
+  >(
+    `UPDATE users
+     SET email = COALESCE($2::citext, email),
+         full_name = COALESCE($3::text, full_name),
+         password_hash = COALESCE($4::text, password_hash)
+     WHERE id = $1
+     RETURNING id, full_name, email::text as email, role, company_id, is_active, updated_at::text as updated_at`,
+    [
+      params.userId,
+      typeof params.email === "string" ? params.email : null,
+      typeof params.fullName === "string" ? params.fullName : null,
+      typeof params.passwordHash === "string" ? params.passwordHash : null,
+    ]
+  );
+  const row = result.rows[0];
+  if (!row) throw Object.assign(new Error("Not found"), { status: 404 });
+  return row;
 }
 
 export async function touchUserLastLogin(userId: string): Promise<void> {
@@ -130,6 +206,7 @@ export type CreateUserInput = {
   email: string;
   passwordHash: string;
   role?: UserRole;
+  companyId?: string | null;
 };
 
 export type CreatedUser = {
@@ -137,16 +214,18 @@ export type CreatedUser = {
   full_name: string;
   email: string;
   role: UserRole;
+  company_id: string | null;
 };
 
 export async function createUser(input: CreateUserInput): Promise<CreatedUser> {
   const pool = getPool();
   const role: UserRole = input.role ?? "staff";
+  const companyId = input.companyId ?? null;
   const result = await pool.query<CreatedUser>(
-    `INSERT INTO users (full_name, email, password_hash, role)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, full_name, email::text as email, role`,
-    [input.fullName, input.email, input.passwordHash, role]
+    `INSERT INTO users (full_name, email, password_hash, role, company_id)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, full_name, email::text as email, role, company_id`,
+    [input.fullName, input.email, input.passwordHash, role, companyId]
   );
   const row = result.rows[0];
   if (!row) throw new Error("Failed to create user");

@@ -161,6 +161,7 @@ export function DocumentManagementPanel(props: {
   initialTrackingStatus: TrackingStatus;
   priceAmount: string;
   priceCurrency: string;
+  canManage?: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations();
@@ -195,6 +196,7 @@ export function DocumentManagementPanel(props: {
   const [paymentNote, setPaymentNote] = React.useState<string>("");
 
   const currency = props.priceCurrency;
+  const canManage = props.canManage !== false;
 
   async function loadTrackingHistory() {
     const res = await fetch(`/api/documents/${props.documentId}/tracking`, {
@@ -471,16 +473,18 @@ export function DocumentManagementPanel(props: {
               <span className="font-medium">{tDocStatus(docStatus)}</span>
             </div>
           </div>
-          <Button
-            type="button"
-            variant={docStatus === "active" ? "secondary" : "default"}
-            onClick={() => void toggleDocStatus()}
-            disabled={loading}
-          >
-            {docStatus === "active"
-              ? t("documents.details.managementPanel.status.deactivate")
-              : t("documents.details.managementPanel.status.activate")}
-          </Button>
+          {canManage ? (
+            <Button
+              type="button"
+              variant={docStatus === "active" ? "secondary" : "default"}
+              onClick={() => void toggleDocStatus()}
+              disabled={loading}
+            >
+              {docStatus === "active"
+                ? t("documents.details.managementPanel.status.deactivate")
+                : t("documents.details.managementPanel.status.activate")}
+            </Button>
+          ) : null}
         </div>
       </section>
 
@@ -508,37 +512,39 @@ export function DocumentManagementPanel(props: {
           </Button>
         </div>
 
-        <form
-          className="grid gap-3 md:grid-cols-4"
-          onSubmit={submitTrackingUpdate}
-        >
-          <TrackingStatusCombobox
-            label={t("documents.details.managementPanel.tracking.newStatus")}
-            value={toTrackingStatus}
-            onChange={setToTrackingStatus}
-            options={TRACKING_OPTIONS}
-            optionLabel={tTracking}
-            disabled={loading}
-          />
-
-          <div className="grid gap-1 md:col-span-2">
-            <div className="text-xs text-muted-foreground">
-              {t("documents.details.managementPanel.note")}
-            </div>
-            <Input
-              value={trackingNote}
-              onChange={(e) => setTrackingNote(e.target.value)}
-              placeholder={t("documents.details.managementPanel.optional")}
+        {canManage ? (
+          <form
+            className="grid gap-3 md:grid-cols-4"
+            onSubmit={submitTrackingUpdate}
+          >
+            <TrackingStatusCombobox
+              label={t("documents.details.managementPanel.tracking.newStatus")}
+              value={toTrackingStatus}
+              onChange={setToTrackingStatus}
+              options={TRACKING_OPTIONS}
+              optionLabel={tTracking}
               disabled={loading}
             />
-          </div>
 
-          <div className="flex items-end md:col-span-1">
-            <Button type="submit" disabled={loading} className="w-full">
-              {t("documents.details.managementPanel.tracking.update")}
-            </Button>
-          </div>
-        </form>
+            <div className="grid gap-1 md:col-span-2">
+              <div className="text-xs text-muted-foreground">
+                {t("documents.details.managementPanel.note")}
+              </div>
+              <Input
+                value={trackingNote}
+                onChange={(e) => setTrackingNote(e.target.value)}
+                placeholder={t("documents.details.managementPanel.optional")}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="flex items-end md:col-span-1">
+              <Button type="submit" disabled={loading} className="w-full">
+                {t("documents.details.managementPanel.tracking.update")}
+              </Button>
+            </div>
+          </form>
+        ) : null}
 
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -604,16 +610,18 @@ export function DocumentManagementPanel(props: {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setShowAddPayment((v) => !v)}
-              disabled={loading}
-            >
-              {showAddPayment
-                ? t("documents.details.managementPanel.close")
-                : t("documents.details.managementPanel.payments.addPayment")}
-            </Button>
+            {canManage ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowAddPayment((v) => !v)}
+                disabled={loading}
+              >
+                {showAddPayment
+                  ? t("documents.details.managementPanel.close")
+                  : t("documents.details.managementPanel.payments.addPayment")}
+              </Button>
+            ) : null}
           </div>
         </div>
 
@@ -646,7 +654,7 @@ export function DocumentManagementPanel(props: {
           </div>
         </div>
 
-        {showAddPayment ? (
+        {canManage && showAddPayment ? (
           <form className="grid gap-3 md:grid-cols-3" onSubmit={submitPayment}>
             <div className="grid gap-1">
               <div className="text-xs text-muted-foreground">

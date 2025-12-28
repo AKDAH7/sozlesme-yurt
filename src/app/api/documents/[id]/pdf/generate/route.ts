@@ -6,6 +6,7 @@ import {
   getDocumentPdfData,
   updateDocumentPdfInfo,
 } from "@/lib/db/queries/documents";
+import { createNotification } from "@/lib/db/queries/notifications";
 import { generateBarcodePngDataUrl } from "@/lib/pdf/barcode";
 import { generateQrPngDataUrl } from "@/lib/pdf/qrcode";
 import {
@@ -241,6 +242,20 @@ export async function POST(
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,
     });
+
+    // Notify the requesting company that the PDF is ready.
+    if (doc.requester_type === "company" && doc.company_id) {
+      await createNotification({
+        targetRole: "company",
+        companyId: doc.company_id,
+        title: "kind:pdf_generated",
+        message: JSON.stringify({
+          referenceNo: doc.reference_no,
+        }),
+        href: `/documents/${id}`,
+        createdByUserId: userId,
+      }).catch(() => undefined);
+    }
 
     return Response.json({
       ok: true,

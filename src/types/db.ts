@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "staff" | "accounting" | "viewer";
+export type UserRole = "admin" | "staff" | "accounting" | "viewer" | "company";
 export type DocStatus = "active" | "inactive";
 export type RequesterType = "company" | "direct";
 export type PaymentStatus = "unpaid" | "partial" | "paid";

@@ -22,9 +22,10 @@ export async function GET() {
     full_name: string;
     email: string;
     role: string;
+    company_id: string | null;
     is_active: boolean;
   }>(
-    `SELECT id, full_name, email::text as email, role, is_active
+    `SELECT id, full_name, email::text as email, role, company_id, is_active
      FROM users
      WHERE id = $1
      LIMIT 1`,
@@ -43,6 +44,7 @@ export async function GET() {
       fullName: user.full_name,
       email: user.email,
       role: user.role,
+      companyId: user.company_id,
     },
   });
 }

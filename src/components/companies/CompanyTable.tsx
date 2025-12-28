@@ -11,6 +11,7 @@ export async function CompanyTable(props: { rows: CompanyRow[] }) {
         <thead>
           <tr className="border-b border-border text-left text-xs text-muted-foreground">
             <th className="px-4 py-3">{t("company")}</th>
+            <th className="px-4 py-3">{t("code")}</th>
             <th className="px-4 py-3">{t("contact")}</th>
             <th className="px-4 py-3">{t("phone")}</th>
             <th className="px-4 py-3">{t("email")}</th>
@@ -25,6 +26,7 @@ export async function CompanyTable(props: { rows: CompanyRow[] }) {
                 className="border-b border-border/50 last:border-0"
               >
                 <td className="px-4 py-3 font-medium">{c.company_name}</td>
+                <td className="px-4 py-3">{c.ref_code ?? "-"}</td>
                 <td className="px-4 py-3">{c.contact_name ?? "-"}</td>
                 <td className="px-4 py-3">{c.contact_phone ?? "-"}</td>
                 <td className="px-4 py-3">{c.contact_email ?? "-"}</td>
@@ -40,7 +42,7 @@ export async function CompanyTable(props: { rows: CompanyRow[] }) {
             ))
           ) : (
             <tr>
-              <td className="px-4 py-6 text-muted-foreground" colSpan={5}>
+              <td className="px-4 py-6 text-muted-foreground" colSpan={6}>
                 {t("empty")}
               </td>
             </tr>

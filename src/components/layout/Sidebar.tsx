@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   BarChart3,
+  Building2,
   FileText,
   LayoutDashboard,
   PenSquare,
@@ -34,6 +36,7 @@ const navItems = [
   { href: "/documents/new", labelKey: "newDocument", icon: PenSquare },
   { href: "/reports", labelKey: "reports", icon: BarChart3 },
   { href: "/templates", labelKey: "templates", icon: FileText },
+  { href: "/companies", labelKey: "companies", icon: Building2 },
 ] as const;
 
 export function AppSidebar() {
@@ -43,6 +46,41 @@ export function AppSidebar() {
   const tActions = useTranslations("actions");
   const locale = useLocale() as Locale;
   const rtl = isRtl(locale);
+
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/auth/me", { cache: "no-store" }).catch(
+        () => null
+      );
+      if (!res || cancelled) return;
+      const data = (await res.json().catch(() => null)) as
+        | { ok: true; user: { role: string } | null }
+        | { ok: false }
+        | null;
+
+      if (cancelled) return;
+      if (data && "ok" in data && data.ok === true) {
+        setRole(data.user?.role ?? null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleNavItems = useMemo(() => {
+    // Company users can create documents and view scoped reports, but cannot
+    // manage templates/companies.
+    if (role === "company") {
+      return navItems.filter(
+        (i) => i.href !== "/templates" && i.href !== "/companies"
+      );
+    }
+    return navItems;
+  }, [role]);
 
   return (
     <Sidebar side={rtl ? "right" : "left"}>
@@ -71,7 +109,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>{tNav("navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const isActive =
                   item.href === "/"
                     ? pathname === "/"

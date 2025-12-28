@@ -4,6 +4,7 @@ import { companyExists } from "@/lib/db/queries/companies";
 import { getDocumentById } from "@/lib/db/queries/documents";
 import { updateDocumentDetails } from "@/lib/db/queries/documents";
 import { getTemplateDetails } from "@/lib/db/queries/templates";
+import { createNotification } from "@/lib/db/queries/notifications";
 import { validateCreateDocumentBody } from "@/lib/validation/documents";
 
 export const runtime = "nodejs";
@@ -23,11 +24,20 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requirePermission("documents:read");
+    const { role, companyId } = await requirePermission("documents:read");
     const { id } = await context.params;
     const doc = await getDocumentById(id);
     if (!doc) {
       return Response.json({ ok: false, error: "Not found" }, { status: 404 });
+    }
+
+    if (role === "company") {
+      if (!companyId || doc.company_id !== companyId) {
+        return Response.json(
+          { ok: false, error: "Forbidden" },
+          { status: 403 }
+        );
+      }
     }
 
     const dto: DocumentDetailsDto = {
@@ -72,7 +82,9 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await requirePermission("documents:create");
+    const { userId, role, companyId } = await requirePermission(
+      "documents:create"
+    );
     const { id } = await context.params;
 
     const current = await getDocumentById(id);
@@ -80,8 +92,31 @@ export async function PATCH(
       return Response.json({ ok: false, error: "Not found" }, { status: 404 });
     }
 
+    if (role === "company") {
+      if (!companyId || current.company_id !== companyId) {
+        return Response.json(
+          { ok: false, error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = (await request.json().catch(() => null)) as unknown;
-    const validated = validateCreateDocumentBody(body);
+
+    const isCompanyUser = role === "company";
+    // Company accounts should not need to send requester/company fields.
+    // Inject them from the session before validation.
+    const bodyForValidation: unknown = isCompanyUser
+      ? {
+          ...(typeof body === "object" && body !== null
+            ? (body as Record<string, unknown>)
+            : {}),
+          requester_type: "company",
+          company_id: companyId ?? null,
+        }
+      : body;
+
+    const validated = validateCreateDocumentBody(bodyForValidation);
 
     const bodyRecord =
       typeof body === "object" && body !== null
@@ -143,8 +178,22 @@ export async function PATCH(
       }
     }
 
-    if (validated.requesterType === "company") {
-      const ok = await companyExists(validated.companyId!);
+    const requesterType = isCompanyUser ? "company" : validated.requesterType;
+    const resolvedCompanyId = isCompanyUser
+      ? companyId ?? null
+      : validated.requesterType === "company"
+      ? validated.companyId
+      : null;
+
+    if (requesterType === "company") {
+      if (!resolvedCompanyId) {
+        return Response.json(
+          { ok: false, error: "company account is missing company_id" },
+          { status: 400 }
+        );
+      }
+
+      const ok = await companyExists(resolvedCompanyId);
       if (!ok) {
         return Response.json(
           { ok: false, error: "company_id does not exist" },
@@ -166,19 +215,20 @@ export async function PATCH(
         dormAddress: validated.dormAddress,
         issueDate: validated.issueDate,
         footerDatetime: validated.footerDatetime,
-        requesterType: validated.requesterType,
-        companyId:
-          validated.requesterType === "company" ? validated.companyId : null,
+        requesterType,
+        companyId: requesterType === "company" ? resolvedCompanyId : null,
         directCustomerName:
-          validated.requesterType === "direct"
-            ? validated.directCustomerName
-            : null,
+          requesterType === "direct" ? validated.directCustomerName : null,
         directCustomerPhone:
-          validated.requesterType === "direct"
-            ? validated.directCustomerPhone
-            : null,
-        priceAmount: validated.priceAmount,
-        priceCurrency: validated.priceCurrency,
+          requesterType === "direct" ? validated.directCustomerPhone : null,
+
+        // Company users can't change billing on edits (admin controls pricing).
+        priceAmount: isCompanyUser
+          ? Number(current.price_amount)
+          : validated.priceAmount,
+        priceCurrency: isCompanyUser
+          ? current.price_currency
+          : validated.priceCurrency,
         templateId,
         templateVersion,
         templateValues,
@@ -190,6 +240,19 @@ export async function PATCH(
         detailsJson: { kind: "edit" },
       },
     });
+
+    // Company edits should notify admins as a modification request.
+    if (role === "company") {
+      await createNotification({
+        targetRole: "admin",
+        title: "kind:company_requested_modifications",
+        message: JSON.stringify({
+          referenceNo: current.reference_no,
+        }),
+        href: `/documents/${id}`,
+        createdByUserId: userId,
+      }).catch(() => undefined);
+    }
 
     return Response.json({ ok: true });
   } catch (err) {

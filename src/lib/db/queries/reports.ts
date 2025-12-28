@@ -41,6 +41,7 @@ export function parseReportRange(params: {
 export async function getReportsSummary(params: {
   from: string | null;
   to: string | null;
+  companyId?: string | null;
 }): Promise<ReportsSummary> {
   const pool = getPool();
   const result = await pool.query<{
@@ -55,8 +56,9 @@ export async function getReportsSummary(params: {
     `WITH docs AS (
 			SELECT d.id, d.price_amount, d.payment_status
 			FROM documents d
-			WHERE ($1::date IS NULL OR d.issue_date >= $1::date)
-				AND ($2::date IS NULL OR d.issue_date <= $2::date)
+      WHERE ($1::date IS NULL OR d.issue_date >= $1::date)
+        AND ($2::date IS NULL OR d.issue_date <= $2::date)
+        AND ($3::uuid IS NULL OR d.company_id = $3::uuid)
 		),
 		pay AS (
 			SELECT COALESCE(SUM(p.received_amount), 0) AS collected
@@ -72,7 +74,7 @@ export async function getReportsSummary(params: {
 			COALESCE(SUM(CASE WHEN docs.payment_status = 'partial' THEN 1 ELSE 0 END), 0)::text AS partial_count,
 			COALESCE(SUM(CASE WHEN docs.payment_status = 'paid' THEN 1 ELSE 0 END), 0)::text AS paid_count
 		FROM docs`,
-    [params.from, params.to]
+    [params.from, params.to, params.companyId ?? null]
   );
 
   const row = result.rows[0];
@@ -92,14 +94,16 @@ export async function getReportsSummary(params: {
 export async function getPaymentsByMethod(params: {
   from: string | null;
   to: string | null;
+  companyId?: string | null;
 }): Promise<PaymentsByMethodRow[]> {
   const pool = getPool();
   const result = await pool.query<PaymentsByMethodRow>(
     `WITH docs AS (
 			SELECT d.id
 			FROM documents d
-			WHERE ($1::date IS NULL OR d.issue_date >= $1::date)
-				AND ($2::date IS NULL OR d.issue_date <= $2::date)
+      WHERE ($1::date IS NULL OR d.issue_date >= $1::date)
+        AND ($2::date IS NULL OR d.issue_date <= $2::date)
+        AND ($3::uuid IS NULL OR d.company_id = $3::uuid)
 		)
 		SELECT
 			p.method,
@@ -108,7 +112,7 @@ export async function getPaymentsByMethod(params: {
 		JOIN docs ON docs.id = p.document_id
 		GROUP BY p.method
 		ORDER BY p.method ASC`,
-    [params.from, params.to]
+    [params.from, params.to, params.companyId ?? null]
   );
 
   const all: PaymentMethod[] = ["cash", "bank_transfer", "card", "other"];
@@ -121,6 +125,7 @@ export async function getPaymentsByMethod(params: {
 export async function getTopRequestingCompanies(params: {
   from: string | null;
   to: string | null;
+  companyId?: string | null;
   limit: number;
 }): Promise<TopCompanyRow[]> {
   const pool = getPool();
@@ -139,10 +144,11 @@ export async function getTopRequestingCompanies(params: {
 		WHERE d.requester_type = 'company'
 			AND ($1::date IS NULL OR d.issue_date >= $1::date)
 			AND ($2::date IS NULL OR d.issue_date <= $2::date)
+      AND ($3::uuid IS NULL OR d.company_id = $3::uuid)
 		GROUP BY c.id, c.company_name
 		ORDER BY COUNT(d.id) DESC
-		LIMIT $3`,
-    [params.from, params.to, limit]
+    LIMIT $4`,
+    [params.from, params.to, params.companyId ?? null, limit]
   );
   return result.rows;
 }

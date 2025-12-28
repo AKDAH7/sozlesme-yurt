@@ -13,6 +13,7 @@ import type {
 import { listDocuments } from "@/lib/db/queries/documents";
 import { listCompaniesMinimal } from "@/lib/db/queries/companies";
 import { CheckCircle2, Circle } from "lucide-react";
+import { requirePermission } from "@/lib/auth/permissions";
 
 function StatusPill({ value }: { value: string }) {
   return (
@@ -44,6 +45,12 @@ export default async function DocumentsPage({
 }) {
   const t = await getTranslations("documents.list");
   const tStatus = await getTranslations("status");
+
+  const { role, companyId: userCompanyId } = await requirePermission(
+    "documents:read"
+  );
+  const isCompanyUser = role === "company";
+
   const sp = await searchParams;
   const page = Math.max(1, Math.floor(Number(sp.page ?? "1") || 1));
   const pageSize = Math.min(
@@ -77,16 +84,19 @@ export default async function DocumentsPage({
       : "";
 
   const requesterParam = (sp.requester_type ?? "").trim();
-  const requesterType: RequesterType | "" =
-    requesterParam === "company" || requesterParam === "direct"
-      ? (requesterParam as RequesterType)
-      : "";
+  const requesterType: RequesterType | "" = isCompanyUser
+    ? ""
+    : requesterParam === "company" || requesterParam === "direct"
+    ? (requesterParam as RequesterType)
+    : "";
 
-  const companyId = (sp.company_id ?? "").trim();
+  const companyId = isCompanyUser
+    ? userCompanyId ?? "__missing_company_id__"
+    : (sp.company_id ?? "").trim();
   const sortParam = (sp.sort ?? "desc").trim().toLowerCase();
   const sortDir: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
 
-  const companies = await listCompaniesMinimal();
+  const companies = isCompanyUser ? [] : await listCompaniesMinimal();
 
   const { rows, total } = await listDocuments({
     page,
@@ -110,8 +120,10 @@ export default async function DocumentsPage({
     if (status) params.set("status", status);
     if (trackingStatus) params.set("tracking_status", trackingStatus);
     if (paymentStatus) params.set("payment_status", paymentStatus);
-    if (requesterType) params.set("requester_type", requesterType);
-    if (companyId) params.set("company_id", companyId);
+    if (!isCompanyUser) {
+      if (requesterType) params.set("requester_type", requesterType);
+      if (companyId) params.set("company_id", companyId);
+    }
     if (sortDir) params.set("sort", sortDir);
     const qs = params.toString();
     return qs ? `/documents?${qs}` : "/documents";
@@ -214,44 +226,48 @@ export default async function DocumentsPage({
           </select>
         </div>
 
-        <div>
-          <div className="text-xs text-muted-foreground">
-            {t("filters.requester")}
-          </div>
-          <select
-            className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
-              "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-            )}
-            name="requester_type"
-            defaultValue={requesterType}
-          >
-            <option value="">{t("filters.all")}</option>
-            <option value="company">{t("filters.requesterCompany")}</option>
-            <option value="direct">{t("filters.requesterDirect")}</option>
-          </select>
-        </div>
+        {isCompanyUser ? null : (
+          <>
+            <div>
+              <div className="text-xs text-muted-foreground">
+                {t("filters.requester")}
+              </div>
+              <select
+                className={cn(
+                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+                  "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                )}
+                name="requester_type"
+                defaultValue={requesterType}
+              >
+                <option value="">{t("filters.all")}</option>
+                <option value="company">{t("filters.requesterCompany")}</option>
+                <option value="direct">{t("filters.requesterDirect")}</option>
+              </select>
+            </div>
 
-        <div className="md:col-span-2">
-          <div className="text-xs text-muted-foreground">
-            {t("filters.company")}
-          </div>
-          <select
-            className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
-              "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-            )}
-            name="company_id"
-            defaultValue={companyId}
-          >
-            <option value="">{t("filters.all")}</option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.company_name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="md:col-span-2">
+              <div className="text-xs text-muted-foreground">
+                {t("filters.company")}
+              </div>
+              <select
+                className={cn(
+                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+                  "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                )}
+                name="company_id"
+                defaultValue={companyId}
+              >
+                <option value="">{t("filters.all")}</option>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.company_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
 
         <div>
           <div className="text-xs text-muted-foreground">

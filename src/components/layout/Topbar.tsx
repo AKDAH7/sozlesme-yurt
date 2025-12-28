@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { NotificationsMenu } from "@/components/layout/NotificationsMenu";
 import { isRtl, type Locale } from "@/lib/i18n/locales";
 
 export function Topbar() {
@@ -31,6 +32,7 @@ export function Topbar() {
         }
       >
         <LanguageSwitcher />
+        <NotificationsMenu />
         <Button asChild variant="secondary" size="sm">
           <Link href="/documents/new">{tActions("newDocument")}</Link>
         </Button>

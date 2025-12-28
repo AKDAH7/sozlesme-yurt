@@ -24,12 +24,7 @@ type VerifyRequest = {
   token?: string;
   referenceNo: string;
   identityNo: string;
-  birthDate: string; // YYYY-MM-DD
 };
-
-function isValidBirthDate(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
 
 export async function POST(req: Request) {
   const ipAddress = getClientIp(req);
@@ -71,17 +66,13 @@ export async function POST(req: Request) {
     typeof body.referenceNo === "string" ? body.referenceNo.trim() : "";
   const identityNo =
     typeof body.identityNo === "string" ? body.identityNo.trim() : "";
-  const birthDate =
-    typeof body.birthDate === "string" ? body.birthDate.trim() : "";
 
-  if (
-    !referenceNo ||
-    !identityNo ||
-    !birthDate ||
-    !isValidBirthDate(birthDate)
-  ) {
+  if (!referenceNo || !identityNo) {
     return NextResponse.json(
-      { ok: false, message: "Lütfen tüm alanları doğru formatta doldurun." },
+      {
+        ok: false,
+        message: "Lütfen referans numarası ve kimlik numarasını girin.",
+      },
       { status: 400 }
     );
   }
@@ -92,7 +83,6 @@ export async function POST(req: Request) {
     const match = await verifyDocumentMatch({
       identityNo,
       referenceNo,
-      birthDate,
       token,
     });
 
@@ -103,7 +93,7 @@ export async function POST(req: Request) {
         token: token ?? null,
         referenceNo,
         identityNoHash,
-        birthDate,
+        birthDate: null,
       });
 
       await insertDocumentAuditLog({
@@ -116,7 +106,6 @@ export async function POST(req: Request) {
           event: "verify_fail",
           token_present: Boolean(token),
           reference_no: referenceNo,
-          birth_date: birthDate,
         },
       });
 
@@ -132,7 +121,7 @@ export async function POST(req: Request) {
       token: token ?? null,
       referenceNo,
       identityNoHash,
-      birthDate,
+      birthDate: null,
     });
 
     await insertDocumentAuditLog({
@@ -145,7 +134,6 @@ export async function POST(req: Request) {
         event: "verify_success",
         token_present: Boolean(token),
         reference_no: referenceNo,
-        birth_date: birthDate,
       },
     });
 

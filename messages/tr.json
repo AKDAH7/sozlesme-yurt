@@ -28,6 +28,32 @@
     "download": "İndir",
     "toggleSidebar": "Kenar çubuğunu aç/kapat"
   },
+  "notifications": {
+    "menu": {
+      "ariaLabel": "Bildirimler",
+      "title": "Bildirimler",
+      "refresh": "Yenile",
+      "loading": "Yükleniyor…",
+      "empty": "Bildirim yok."
+    },
+    "errors": {
+      "loadFailed": "Bildirimler yüklenemedi."
+    },
+    "items": {
+      "pdf_generated": {
+        "title": "PDF oluşturuldu",
+        "message": "{referenceNo} için PDF hazır."
+      },
+      "company_requested_document": {
+        "title": "Belge talebi",
+        "message": "{companyName}, {referenceNo} için belge talep etti."
+      },
+      "company_requested_modifications": {
+        "title": "Düzeltme talebi",
+        "message": "Şirket {referenceNo} belgesini güncelledi."
+      }
+    }
+  },
   "verify": {
     "title": "Belge doğrulama",
     "subtitle": "Belge doğrulamak için aşağıdaki bilgileri girin.",
@@ -293,7 +319,20 @@
   },
   "dashboard": {
     "home": {
-      "hint": "Gezinmek için menüyü kullanın."
+      "hint": "Gezinmek için menüyü kullanın.",
+      "requestsTitle": "Onay bekleyen firma talepleri",
+      "requestsEmpty": "Bekleyen talep yok.",
+      "requestsActions": {
+        "title": "İşlemler",
+        "generatePdf": "PDF Oluştur",
+        "regeneratePdf": "PDF Yeniden Oluştur",
+        "generating": "Oluşturuluyor…",
+        "approve": "Onayla",
+        "approving": "Onaylanıyor…",
+        "errors": {
+          "generic": "İşlem başarısız"
+        }
+      }
     }
   },
   "auth": {
@@ -339,6 +378,7 @@
     },
     "table": {
       "company": "Şirket",
+      "code": "Kod",
       "contact": "İletişim",
       "phone": "Telefon",
       "email": "E-posta",
@@ -356,6 +396,7 @@
       },
       "fields": {
         "companyName": "Şirket Adı",
+        "refCode": "Referans kodu",
         "contactName": "İletişim Kişisi",
         "contactPhone": "Telefon",
         "contactEmail": "E-posta",
@@ -363,10 +404,14 @@
       },
       "placeholders": {
         "companyName": "Şirket adı",
+        "refCode": "Opsiyonel (örn. EN)",
         "contactName": "Ad Soyad",
         "contactPhone": "Telefon",
         "contactEmail": "email@company.com",
         "notes": "Notlar"
+      },
+      "hints": {
+        "refCode": "Opsiyonel. 2–4 harf (A–Z). Evrak referans numarasına eklenir."
       },
       "actions": {
         "create": "Oluştur",
@@ -377,6 +422,59 @@
         "companyNameRequired": "Şirket adı zorunludur.",
         "actionFailed": "İşlem başarısız.",
         "unknown": "Bir hata oluştu. Lütfen tekrar deneyin."
+      }
+    },
+    "account": {
+      "title": "Firma hesabı",
+      "subtitle": "Bu firma için giriş hesabı oluşturun.",
+      "loading": "Yükleniyor...",
+      "fields": {
+        "email": "E-posta",
+        "fullName": "Ad Soyad",
+        "password": "Şifre"
+      },
+      "actions": {
+        "create": "Hesap oluştur",
+        "creating": "Oluşturuluyor...",
+        "update": "Güncelle",
+        "saving": "Kaydediliyor..."
+      },
+      "success": {
+        "created": "Hesap oluşturuldu. Bu e-posta/şifre ile giriş yapabilirsiniz.",
+        "updated": "Hesap güncellendi."
+      },
+      "errors": {
+        "emailRequired": "E-posta zorunludur.",
+        "passwordTooShort": "Şifre en az 6 karakter olmalıdır.",
+        "emailInUse": "Bu e-posta zaten kullanılıyor.",
+        "alreadyExists": "Bu firma için zaten bir hesap var.",
+        "actionFailed": "İşlem başarısız.",
+        "unknown": "Bilinmeyen hata."
+      }
+    },
+    "pricing": {
+      "title": "Fiyatlandırma",
+      "subtitle": "Bu firma için şablon bazlı fiyat belirleyin. Belirlenmezse yeni belgelerde varsayılan fiyat kullanılır.",
+      "loading": "Yükleniyor...",
+      "empty": "Şablon bulunamadı.",
+      "default": {
+        "title": "Varsayılan fiyat (yeni belgeler)",
+        "amount": "Tutar",
+        "currency": "Para birimi"
+      },
+      "table": {
+        "template": "Şablon",
+        "price": "Fiyat"
+      },
+      "actions": {
+        "saveDefault": "Varsayılanı kaydet",
+        "save": "Kaydet",
+        "saving": "Kaydediliyor..."
+      },
+      "errors": {
+        "loadFailed": "Fiyatlandırma yüklenemedi.",
+        "saveFailed": "Kaydedilemedi.",
+        "amountInvalid": "Tutar 0 veya daha büyük olmalıdır."
       }
     }
   },

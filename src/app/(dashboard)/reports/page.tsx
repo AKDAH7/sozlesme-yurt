@@ -76,8 +76,10 @@ export default async function Page({
 }) {
   const t = await getTranslations("reports.page");
 
+  let auth: { role: string; companyId: string | null };
   try {
-    await requirePermission("reports:view");
+    const { role, companyId } = await requirePermission("reports:view");
+    auth = { role, companyId: companyId ?? null };
   } catch (err) {
     const anyErr = err as { status?: number; message?: string } | null;
     const status =
@@ -97,10 +99,17 @@ export default async function Page({
   const sp = await searchParams;
   const range = parseReportRange({ from: sp.from ?? null, to: sp.to ?? null });
 
+  const scopedRange =
+    auth.role === "company"
+      ? { ...range, companyId: auth.companyId }
+      : { ...range, companyId: null };
+
   const [summary, paymentsByMethod, topCompanies] = await Promise.all([
-    getReportsSummary(range),
-    getPaymentsByMethod(range),
-    getTopRequestingCompanies({ ...range, limit: 10 }),
+    getReportsSummary(scopedRange),
+    getPaymentsByMethod(scopedRange),
+    auth.role === "company"
+      ? Promise.resolve([])
+      : getTopRequestingCompanies({ ...scopedRange, limit: 10 }),
   ]);
 
   return (
@@ -132,7 +141,9 @@ export default async function Page({
 
       <div className="grid gap-3 md:grid-cols-2">
         <PaymentsByMethodTable rows={paymentsByMethod} />
-        <TopCompaniesTable rows={topCompanies} />
+        {auth.role === "company" ? null : (
+          <TopCompaniesTable rows={topCompanies} />
+        )}
       </div>
     </div>
   );

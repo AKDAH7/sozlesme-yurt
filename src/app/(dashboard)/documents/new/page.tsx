@@ -87,6 +87,11 @@ type TemplateDetails = {
   variables_definition: TemplateVariableDef[];
 };
 
+type CompanyListItem = {
+  id: string;
+  company_name: string;
+};
+
 const UNIVERSITY_OPTIONS = [
   "İstanbul Atlas Üniversitesi",
   "Altınbaş Üniversitesi",
@@ -312,6 +317,101 @@ function TemplateCombobox(props: {
                 <span className="block truncate">{tpl.name}</span>
                 <span className="block truncate text-xs text-muted-foreground">
                   {tpl.language}
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-muted-foreground">
+              No results
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CompanyCombobox(props: {
+  companies: CompanyListItem[];
+  valueId: string;
+  onChangeId: (nextId: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+  required?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [query, setQuery] = useState("");
+  const queryRef = useRef(query);
+  useEffect(() => {
+    queryRef.current = query;
+  }, [query]);
+
+  const selectedLabel = useMemo(() => {
+    if (!props.valueId) return "";
+    const found = props.companies.find((c) => c.id === props.valueId);
+    return found ? found.company_name : "";
+  }, [props.valueId, props.companies]);
+
+  const options = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase("tr-TR");
+    const all = props.companies;
+    if (!q) return all;
+    return all.filter((c) =>
+      c.company_name.toLocaleLowerCase("tr-TR").includes(q)
+    );
+  }, [query, props.companies]);
+
+  useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      const el = wrapperRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && el.contains(e.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <Input
+        value={selectedLabel || query}
+        placeholder={props.placeholder}
+        disabled={props.disabled}
+        required={props.required}
+        autoComplete="off"
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          window.setTimeout(() => setOpen(false), 0);
+        }}
+      />
+
+      {open && !props.disabled ? (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 z-50 mt-1 max-h-56 w-full max-w-full overflow-auto overflow-x-hidden rounded-md border border-border bg-background shadow-sm"
+        >
+          {options.length ? (
+            options.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  props.onChangeId(c.id);
+                  setQuery(c.company_name);
+                  setOpen(false);
+                }}
+              >
+                <span className="block truncate">{c.company_name}</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {c.id}
                 </span>
               </button>
             ))
@@ -553,6 +653,11 @@ export default function NewDocumentPage() {
   );
   const [dynamicSubmitting, setDynamicSubmitting] = useState(false);
 
+  const [role, setRole] = useState<string | null>(null);
+  const isCompanyUser = role === "company";
+
+  const [companies, setCompanies] = useState<CompanyListItem[]>([]);
+
   const defaultFooterDatetimeLocal = useMemo(() => {
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -597,7 +702,71 @@ export default function NewDocumentPage() {
   });
 
   const requesterType = useWatch({ control, name: "requester_type" });
+  const selectedCompanyId = useWatch({ control, name: "company_id" });
   const universityName = useWatch({ control, name: "university_name" });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/auth/me", { cache: "no-store" }).catch(
+        () => null
+      );
+      if (!res || cancelled) return;
+      const data = (await res.json().catch(() => null)) as
+        | { ok: true; user: { role: string } | null }
+        | { ok: false }
+        | null;
+
+      if (cancelled) return;
+      if (data && "ok" in data && data.ok === true) {
+        setRole(data.user?.role ?? null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!role || role === "company") return;
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/companies", { cache: "no-store" }).catch(
+        () => null
+      );
+      if (!res || cancelled) return;
+      const data = (await res.json().catch(() => null)) as
+        | { ok: true; companies: CompanyListItem[] }
+        | { ok: false }
+        | null;
+      if (cancelled) return;
+      if (data?.ok && Array.isArray(data.companies)) {
+        setCompanies(
+          data.companies
+            .filter((c) => c && typeof c.id === "string")
+            .map((c) => ({ id: c.id, company_name: c.company_name }))
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [role]);
+
+  useEffect(() => {
+    if (!isCompanyUser) return;
+    // Enforce requester type in the UI for company users.
+    setValue("requester_type", "company", {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    setValue("company_id", "", {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+  }, [isCompanyUser, setValue]);
 
   useEffect(() => {
     let cancelled = false;
@@ -690,7 +859,7 @@ export default function NewDocumentPage() {
         } else if (v.key === "issue_date") {
           nextValues[v.key] = defaultIssueDate;
         } else if (v.key === "requester_type") {
-          nextValues[v.key] = "direct";
+          nextValues[v.key] = isCompanyUser ? "company" : "direct";
         } else if (v.key === "price_currency") {
           nextValues[v.key] = "TRY";
         } else if (v.type === "number") {
@@ -705,7 +874,13 @@ export default function NewDocumentPage() {
     return () => {
       cancelled = true;
     };
-  }, [templateId, defaultFooterDatetimeLocal, defaultIssueDate, t]);
+  }, [
+    templateId,
+    defaultFooterDatetimeLocal,
+    defaultIssueDate,
+    t,
+    isCompanyUser,
+  ]);
 
   const onSubmitDefault = handleSubmit(async (values) => {
     setError(null);
@@ -719,15 +894,22 @@ export default function NewDocumentPage() {
       dorm_address: values.dorm_address || null,
       issue_date: values.issue_date,
       footer_datetime: values.footer_datetime,
-      requester_type: values.requester_type,
-      company_id:
-        values.requester_type === "company" ? values.company_id : null,
-      direct_customer_name:
-        values.requester_type === "direct" ? values.direct_customer_name : null,
-      direct_customer_phone:
-        values.requester_type === "direct"
-          ? values.direct_customer_phone
-          : null,
+      requester_type: isCompanyUser ? "company" : values.requester_type,
+      company_id: isCompanyUser
+        ? null
+        : values.requester_type === "company"
+        ? values.company_id
+        : null,
+      direct_customer_name: isCompanyUser
+        ? null
+        : values.requester_type === "direct"
+        ? values.direct_customer_name
+        : null,
+      direct_customer_phone: isCompanyUser
+        ? null
+        : values.requester_type === "direct"
+        ? values.direct_customer_phone
+        : null,
       price_amount: Number(values.price_amount),
       price_currency: values.price_currency,
 
@@ -757,8 +939,9 @@ export default function NewDocumentPage() {
     router.refresh();
   });
 
-  const requesterTypeDynamic =
-    (templateValues.requester_type as RequesterType | undefined) ?? "direct";
+  const requesterTypeDynamic = isCompanyUser
+    ? "company"
+    : (templateValues.requester_type as RequesterType | undefined) ?? "direct";
 
   const dynamicVariableDefs = useMemo(() => {
     if (!templateDetails) return [] as TemplateVariableDef[];
@@ -796,6 +979,9 @@ export default function NewDocumentPage() {
   }
 
   function shouldHideKey(key: string): boolean {
+    if (isCompanyUser && (key === "requester_type" || key === "company_id")) {
+      return true;
+    }
     if (key === "company_id") return requesterTypeDynamic !== "company";
     if (key === "direct_customer_name")
       return requesterTypeDynamic !== "direct";
@@ -850,18 +1036,21 @@ export default function NewDocumentPage() {
         ),
 
         requester_type: rt,
-        company_id:
-          rt === "company"
-            ? String(templateValuesWithAliases.company_id ?? "")
-            : null,
-        direct_customer_name:
-          rt === "direct"
-            ? String(templateValuesWithAliases.direct_customer_name ?? "")
-            : null,
-        direct_customer_phone:
-          rt === "direct"
-            ? String(templateValuesWithAliases.direct_customer_phone ?? "")
-            : null,
+        company_id: isCompanyUser
+          ? null
+          : rt === "company"
+          ? String(templateValuesWithAliases.company_id ?? "")
+          : null,
+        direct_customer_name: isCompanyUser
+          ? null
+          : rt === "direct"
+          ? String(templateValuesWithAliases.direct_customer_name ?? "")
+          : null,
+        direct_customer_phone: isCompanyUser
+          ? null
+          : rt === "direct"
+          ? String(templateValuesWithAliases.direct_customer_phone ?? "")
+          : null,
 
         price_amount: Number(templateValuesWithAliases.price_amount ?? 0),
         price_currency: String(
@@ -929,6 +1118,9 @@ export default function NewDocumentPage() {
 
                 if (v.key === "requester_type") {
                   const locked = hasPresetValue(v);
+                  if (isCompanyUser) {
+                    return null;
+                  }
                   return (
                     <label key={v.key} className="grid gap-1">
                       <span className="text-sm text-muted-foreground">
@@ -963,7 +1155,8 @@ export default function NewDocumentPage() {
                 const isRequired =
                   v.required ||
                   (v.key === "company_id" &&
-                    requesterTypeDynamic === "company") ||
+                    requesterTypeDynamic === "company" &&
+                    !isCompanyUser) ||
                   (v.key === "direct_customer_name" &&
                     requesterTypeDynamic === "direct");
 
@@ -980,6 +1173,24 @@ export default function NewDocumentPage() {
                         disabled={locked}
                         required={isRequired}
                         onChange={(next) => setTemplateValue(v.key, next)}
+                      />
+                    </label>
+                  );
+                }
+
+                if (v.key === "company_id" && !isCompanyUser) {
+                  return (
+                    <label key={v.key} className="grid gap-1">
+                      <span className="text-sm text-muted-foreground">
+                        {getTranslatedLabel(v, locale)}
+                      </span>
+                      <CompanyCombobox
+                        companies={companies}
+                        valueId={String(value ?? "")}
+                        onChangeId={(nextId) => setTemplateValue(v.key, nextId)}
+                        placeholder={t("fields.companyId")}
+                        disabled={locked}
+                        required={isRequired}
                       />
                     </label>
                   );
@@ -1106,48 +1317,70 @@ export default function NewDocumentPage() {
           </Section>
 
           <Section title={t("sections.requester")}>
-            <label className="grid gap-1">
-              <span className="text-sm text-muted-foreground">
-                {t("fields.requesterType")}
-              </span>
-              <RequesterTypeCombobox
-                value={(requesterType as RequesterType) ?? "direct"}
-                required
-                labelDirect={t("fields.requesterDirect")}
-                labelCompany={t("fields.requesterCompany")}
-                onChange={(next) =>
-                  setValue("requester_type", next, {
-                    shouldDirty: true,
-                    shouldTouch: true,
-                    shouldValidate: true,
-                  })
-                }
-              />
-            </label>
-
-            {requesterType === "company" ? (
-              <label className="grid gap-1">
-                <span className="text-sm text-muted-foreground">
-                  {t("fields.companyId")}
-                </span>
-                <Input {...register("company_id", { required: true })} />
-              </label>
-            ) : (
+            {isCompanyUser ? null : (
               <>
                 <label className="grid gap-1">
                   <span className="text-sm text-muted-foreground">
-                    {t("fields.customerName")}
+                    {t("fields.requesterType")}
                   </span>
-                  <Input
-                    {...register("direct_customer_name", { required: true })}
+                  <RequesterTypeCombobox
+                    value={(requesterType as RequesterType) ?? "direct"}
+                    required
+                    labelDirect={t("fields.requesterDirect")}
+                    labelCompany={t("fields.requesterCompany")}
+                    onChange={(next) =>
+                      setValue("requester_type", next, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      })
+                    }
                   />
                 </label>
-                <label className="grid gap-1">
-                  <span className="text-sm text-muted-foreground">
-                    {t("fields.customerPhone")}
-                  </span>
-                  <Input {...register("direct_customer_phone")} />
-                </label>
+
+                {requesterType === "company" ? (
+                  <label className="grid gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      {t("fields.companyId")}
+                    </span>
+                    <input
+                      type="hidden"
+                      {...register("company_id", { required: true })}
+                    />
+                    <CompanyCombobox
+                      companies={companies}
+                      valueId={String(selectedCompanyId ?? "")}
+                      onChangeId={(nextId) =>
+                        setValue("company_id", nextId, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      placeholder={t("fields.companyId")}
+                      required
+                    />
+                  </label>
+                ) : (
+                  <>
+                    <label className="grid gap-1">
+                      <span className="text-sm text-muted-foreground">
+                        {t("fields.customerName")}
+                      </span>
+                      <Input
+                        {...register("direct_customer_name", {
+                          required: true,
+                        })}
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="text-sm text-muted-foreground">
+                        {t("fields.customerPhone")}
+                      </span>
+                      <Input {...register("direct_customer_phone")} />
+                    </label>
+                  </>
+                )}
               </>
             )}
           </Section>

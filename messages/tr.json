@@ -91,6 +91,9 @@
     "details": {
       "title": "Belge",
       "back": "Geri",
+      "actions": {
+        "edit": "Düzenle"
+      },
       "requesterType": {
         "company": "Şirket",
         "direct": "Bireysel"
@@ -189,6 +192,19 @@
         "price": "Tutar",
         "payment": "Ödeme",
         "created": "Oluşturulma"
+      }
+    },
+    "edit": {
+      "title": "Belgeyi düzenle",
+      "subtitle": "Alanları güncelleyin ve kaydedin.",
+      "actions": {
+        "save": "Değişiklikleri kaydet",
+        "saving": "Kaydediliyor…",
+        "cancel": "İptal"
+      },
+      "errors": {
+        "loadFailed": "Belge yüklenemedi.",
+        "saveFailed": "Değişiklikler kaydedilemedi."
       }
     },
     "list": {
@@ -482,12 +498,17 @@
       "actions": {
         "edit": "Düzenle",
         "preview": "Önizle",
+        "delete": "Sil",
+        "deleting": "Siliniyor…",
         "activate": "Aktifleştir",
         "deactivate": "Pasifleştir",
         "saving": "Kaydediliyor…"
       },
+      "confirmDelete": "\"{name}\" şablonunu silmek istiyor musunuz?",
       "errors": {
-        "toggleFailed": "Durum değiştirilemedi."
+        "toggleFailed": "Durum değiştirilemedi.",
+        "deleteFailed": "Şablon silinemedi.",
+        "deleteInUse": "Bu şablon belgelerde kullanıldığı için silinemez."
       }
     },
     "form": {

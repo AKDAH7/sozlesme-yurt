@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import type { TemplateListRow } from "@/lib/db/queries/templates";
 import { TemplateActiveToggle } from "@/components/templates/TemplateActiveToggle";
+import { TemplateDeleteButton } from "@/components/templates/TemplateDeleteButton";
 
 export async function TemplateTable(props: { rows: TemplateListRow[] }) {
   const t = await getTranslations("templates.list");
@@ -58,6 +59,10 @@ export async function TemplateTable(props: { rows: TemplateListRow[] }) {
                     <TemplateActiveToggle
                       templateId={r.id}
                       isActive={r.is_active}
+                    />
+                    <TemplateDeleteButton
+                      templateId={r.id}
+                      templateName={r.name}
                     />
                   </div>
                 </td>

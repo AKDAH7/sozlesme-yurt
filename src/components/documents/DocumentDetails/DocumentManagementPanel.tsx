@@ -58,6 +58,74 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   "other",
 ];
 
+function TrackingStatusCombobox(props: {
+  label: string;
+  value: TrackingStatus;
+  onChange: (next: TrackingStatus) => void;
+  options: TrackingStatus[];
+  optionLabel: (s: TrackingStatus) => string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      const el = wrapperRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && el.contains(e.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
+  return (
+    <div className="grid gap-1" ref={wrapperRef}>
+      <div className="text-xs text-muted-foreground">{props.label}</div>
+      <div className="relative">
+        <Input
+          value={props.optionLabel(props.value)}
+          readOnly
+          disabled={props.disabled}
+          onClick={() => {
+            if (!props.disabled) setOpen((v) => !v);
+          }}
+          onFocus={() => {
+            if (!props.disabled) setOpen(true);
+          }}
+        />
+        {open && !props.disabled ? (
+          <div
+            role="listbox"
+            className="absolute left-0 right-0 z-50 mt-1 max-h-56 w-full max-w-full overflow-auto overflow-x-hidden rounded-md border border-border bg-background shadow-sm"
+          >
+            {props.options.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={cn(
+                  "w-full px-3 py-2 text-left text-sm hover:bg-muted",
+                  s === props.value
+                    ? "bg-muted/50 text-foreground"
+                    : "text-foreground"
+                )}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  props.onChange(s);
+                  setOpen(false);
+                }}
+              >
+                <span className="block truncate">{props.optionLabel(s)}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function SelectNative(
   props: React.ComponentProps<"select"> & { hasError?: boolean }
 ) {
@@ -417,19 +485,22 @@ export function DocumentManagementPanel(props: {
       </section>
 
       <section className="grid gap-3 rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="grid gap-1">
             <div className="text-sm font-medium">
               {t("documents.details.managementPanel.tracking.title")}
             </div>
-            <div className="text-sm text-muted-foreground">
-              {t("documents.details.managementPanel.current")}:{" "}
-              <span className="font-medium">{tTracking(trackingStatus)}</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{t("documents.details.managementPanel.current")}:</span>
+              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                {tTracking(trackingStatus)}
+              </span>
             </div>
           </div>
           <Button
             type="button"
             variant="secondary"
+            size="sm"
             onClick={() => void reloadAll()}
             disabled={loading}
           >
@@ -438,27 +509,17 @@ export function DocumentManagementPanel(props: {
         </div>
 
         <form
-          className="grid gap-3 md:grid-cols-3"
+          className="grid gap-3 md:grid-cols-4"
           onSubmit={submitTrackingUpdate}
         >
-          <div className="grid gap-1">
-            <div className="text-xs text-muted-foreground">
-              {t("documents.details.managementPanel.tracking.newStatus")}
-            </div>
-            <SelectNative
-              value={toTrackingStatus}
-              onChange={(e) =>
-                setToTrackingStatus(e.target.value as TrackingStatus)
-              }
-              disabled={loading}
-            >
-              {TRACKING_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {tTracking(s)}
-                </option>
-              ))}
-            </SelectNative>
-          </div>
+          <TrackingStatusCombobox
+            label={t("documents.details.managementPanel.tracking.newStatus")}
+            value={toTrackingStatus}
+            onChange={setToTrackingStatus}
+            options={TRACKING_OPTIONS}
+            optionLabel={tTracking}
+            disabled={loading}
+          />
 
           <div className="grid gap-1 md:col-span-2">
             <div className="text-xs text-muted-foreground">
@@ -472,8 +533,8 @@ export function DocumentManagementPanel(props: {
             />
           </div>
 
-          <div className="md:col-span-3">
-            <Button type="submit" disabled={loading}>
+          <div className="flex items-end md:col-span-1">
+            <Button type="submit" disabled={loading} className="w-full">
               {t("documents.details.managementPanel.tracking.update")}
             </Button>
           </div>

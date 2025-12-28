@@ -18,12 +18,17 @@
       "actions": {
         "edit": "تعديل",
         "preview": "معاينة",
+        "delete": "حذف",
+        "deleting": "جارٍ الحذف…",
         "activate": "تفعيل",
         "deactivate": "تعطيل",
         "saving": "جارٍ الحفظ…"
       },
+      "confirmDelete": "هل تريد حذف القالب \"{name}\"؟",
       "errors": {
-        "toggleFailed": "تعذر تغيير الحالة."
+        "toggleFailed": "تعذر تغيير الحالة.",
+        "deleteFailed": "تعذر حذف القالب.",
+        "deleteInUse": "لا يمكن حذف قالب مستخدم في مستندات."
       }
     },
     "form": {
@@ -177,6 +182,9 @@
     "details": {
       "title": "المستند",
       "back": "رجوع",
+      "actions": {
+        "edit": "تعديل"
+      },
       "requesterType": {
         "company": "شركة",
         "direct": "مباشر"
@@ -275,6 +283,19 @@
         "price": "السعر",
         "payment": "الدفع",
         "created": "تاريخ الإنشاء"
+      }
+    },
+    "edit": {
+      "title": "تعديل المستند",
+      "subtitle": "حدّث الحقول ثم احفظ.",
+      "actions": {
+        "save": "حفظ التغييرات",
+        "saving": "جارٍ الحفظ…",
+        "cancel": "إلغاء"
+      },
+      "errors": {
+        "loadFailed": "تعذر تحميل المستند.",
+        "saveFailed": "تعذر حفظ التغييرات."
       }
     },
     "list": {

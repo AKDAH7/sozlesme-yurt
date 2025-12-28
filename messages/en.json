@@ -91,6 +91,9 @@
     "details": {
       "title": "Document",
       "back": "Back",
+      "actions": {
+        "edit": "Edit"
+      },
       "requesterType": {
         "company": "Company",
         "direct": "Direct"
@@ -189,6 +192,19 @@
         "price": "Price",
         "payment": "Payment",
         "created": "Created"
+      }
+    },
+    "edit": {
+      "title": "Edit document",
+      "subtitle": "Update fields and save.",
+      "actions": {
+        "save": "Save changes",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "loadFailed": "Failed to load document.",
+        "saveFailed": "Failed to save changes."
       }
     },
     "list": {
@@ -482,12 +498,17 @@
       "actions": {
         "edit": "Edit",
         "preview": "Preview",
+        "delete": "Delete",
+        "deleting": "Deleting…",
         "activate": "Activate",
         "deactivate": "Deactivate",
         "saving": "Saving…"
       },
+      "confirmDelete": "Delete \"{name}\"?",
       "errors": {
-        "toggleFailed": "Failed to change status."
+        "toggleFailed": "Failed to change status.",
+        "deleteFailed": "Failed to delete template.",
+        "deleteInUse": "This template is used by documents and cannot be deleted."
       }
     },
     "form": {

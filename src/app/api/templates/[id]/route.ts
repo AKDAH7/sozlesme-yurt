@@ -3,11 +3,14 @@ import type { TemplateLanguage, TemplateVariableType } from "@/types/db";
 import { requirePermission } from "@/lib/auth/permissions";
 import {
   createTemplateVersion,
+  deleteTemplate,
   getTemplateDetails,
   updateTemplateFamily,
   type TemplateVariableDefinition,
 } from "@/lib/db/queries/templates";
 import { mergeTemplateVariablesWithCore } from "@/lib/templates/coreVariables";
+
+export const runtime = "nodejs";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -174,6 +177,35 @@ export async function PATCH(
 
     return Response.json(
       { ok: false, error: anyErr?.message ?? "Failed to update template" },
+      { status }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    await requirePermission("templates:manage");
+    const { id } = await context.params;
+
+    await deleteTemplate({ templateId: id });
+    return Response.json({ ok: true });
+  } catch (err) {
+    const anyErr = err as { status?: number; message?: string } | null;
+    const status =
+      anyErr?.status && Number.isFinite(anyErr.status) ? anyErr.status : 500;
+
+    const errorCode =
+      status === 404 ? "notFound" : status === 409 ? "inUse" : "deleteFailed";
+
+    return Response.json(
+      {
+        ok: false,
+        errorCode,
+        error: anyErr?.message ?? "Failed to delete template",
+      },
       { status }
     );
   }

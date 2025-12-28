@@ -8,6 +8,8 @@ import {
 } from "@/lib/db/queries/templates";
 import { mergeTemplateVariablesWithCore } from "@/lib/templates/coreVariables";
 
+export const runtime = "nodejs";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

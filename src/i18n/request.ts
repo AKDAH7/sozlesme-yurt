@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
+import type { AbstractIntlMessages } from "next-intl";
 
 import {
   defaultLocale,
@@ -26,10 +27,10 @@ export default getRequestConfig(async () => {
 
   // Note: Static imports are more resilient across build tools and server runtimes
   // than a variable dynamic import.
-  const messagesByLocale: Record<Locale, Record<string, any>> = {
-    ar: arMessages as Record<string, any>,
-    en: enMessages as Record<string, any>,
-    tr: trMessages as Record<string, any>,
+  const messagesByLocale: Record<Locale, AbstractIntlMessages> = {
+    ar: arMessages as AbstractIntlMessages,
+    en: enMessages as AbstractIntlMessages,
+    tr: trMessages as AbstractIntlMessages,
   };
 
   const messages = messagesByLocale[locale] ?? messagesByLocale[defaultLocale];

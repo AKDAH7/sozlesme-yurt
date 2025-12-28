@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -9,7 +9,6 @@ import type { CreateDocumentRequestDto } from "@/types/dto";
 import type { RequesterType } from "@/types/db";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { cn } from "@/lib/utils";
 
 type FormValues = {
   owner_full_name: string;
@@ -87,6 +86,318 @@ type TemplateDetails = {
   latest_version: number;
   variables_definition: TemplateVariableDef[];
 };
+
+const UNIVERSITY_OPTIONS = [
+  "İstanbul Atlas Üniversitesi",
+  "Altınbaş Üniversitesi",
+  "İstanbul Aydın Üniversitesi",
+  "İstanbul Arel Üniversitesi",
+  "İstinye Üniversitesi",
+  "Özyeğin Üniversitesi",
+  "İstanbul Sabahattin Zaim Üniversitesi",
+  "İstanbul Topkapı Üniversitesi",
+  "İstanbul Gelişim Üniversitesi",
+  "İstanbul Kent Üniversitesi",
+  "İstanbul Medipol Üniversitesi",
+  "İstanbul Okan Üniversitesi",
+  "Haliç Üniversitesi",
+  "İstanbul Kültür Üniversitesi",
+  "Fenerbahçe Üniversitesi",
+  "İstanbul Nişantaşı Üniversitesi",
+  "Üsküdar Üniversitesi",
+  "Bahçeşehir Üniversitesi",
+  "İstanbul Yeni Yüzyıl Üniversitesi",
+  "Işık Üniversitesi",
+  "Biruni Üniversitesi",
+  "İstanbul Gedik Üniversitesi",
+  "Kadir Has Üniversitesi",
+  "Fatih Sultan Mehmet Vakıf Üniversitesi",
+  "İbn Haldun Üniversitesi",
+  "Bezmialem Vakıf Üniversitesi",
+  "Beykoz Üniversitesi",
+  "İstanbul Beykent Üniversitesi",
+  "İstanbul Bilgi Üniversitesi",
+  "İstanbul Galata Üniversitesi",
+  "İstanbul Esenyurt Üniversitesi",
+  "Maltepe Üniversitesi",
+  "Doğuş Üniversitesi",
+  "İstanbul Ticaret Üniversitesi",
+  "İstanbul Sağlık ve Teknoloji Üniversitesi",
+  "Boğaziçi Üniversitesi",
+  "Galatasaray Üniversitesi",
+  "Marmara Üniversitesi",
+  "Sağlık Bilimleri Üniversitesi",
+  "Türk-Alman Üniversitesi",
+  "İstanbul Teknik Üniversitesi",
+  "İstanbul Üniversitesi",
+  "İstanbul Üniversitesi-Cerrahpaşa",
+  "Yıldız Teknik Üniversitesi",
+  "İstanbul Medeniyet Üniversitesi",
+  "Mimar Sinan Güzel Sanatlar Üniversitesi",
+] as const;
+
+function UniversityCombobox(props: {
+  value: string;
+  onChange: (next: string) => void;
+  inputId?: string;
+  required?: boolean;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  const options = useMemo(() => {
+    const q = props.value.trim().toLocaleLowerCase("tr-TR");
+    if (!q) return UNIVERSITY_OPTIONS as readonly string[];
+    return (UNIVERSITY_OPTIONS as readonly string[]).filter((u) =>
+      u.toLocaleLowerCase("tr-TR").includes(q)
+    );
+  }, [props.value]);
+
+  useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      const el = wrapperRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && el.contains(e.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <Input
+        id={props.inputId}
+        value={props.value}
+        onChange={(e) => {
+          props.onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          // Give click selection a moment before closing.
+          window.setTimeout(() => setOpen(false), 0);
+        }}
+        disabled={props.disabled}
+        required={props.required}
+        autoComplete="off"
+      />
+
+      {open && !props.disabled ? (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 z-50 mt-1 max-h-56 w-full max-w-full overflow-auto overflow-x-hidden rounded-md border border-border bg-background shadow-sm"
+        >
+          {options.length ? (
+            options.map((u) => (
+              <button
+                key={u}
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  props.onChange(u);
+                  setOpen(false);
+                }}
+              >
+                <span className="block truncate">{u}</span>
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-muted-foreground">
+              No results
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function TemplateCombobox(props: {
+  templates: TemplateListItem[];
+  valueId: string;
+  onChangeId: (nextId: string) => void;
+  placeholder: string;
+  defaultLabel: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [query, setQuery] = useState("");
+  const queryRef = useRef(query);
+  useEffect(() => {
+    queryRef.current = query;
+  }, [query]);
+
+  // Keep the input display in sync when the selection changes (without setState-in-effect).
+  const selectedLabel = useMemo(() => {
+    if (!props.valueId) return "";
+    const found = props.templates.find((t) => t.id === props.valueId);
+    return found ? `${found.name} (${found.language})` : "";
+  }, [props.valueId, props.templates]);
+
+  const options = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase("tr-TR");
+    const all = props.templates;
+    if (!q) return all;
+    return all.filter((tpl) => {
+      const label = `${tpl.name} (${tpl.language})`.toLocaleLowerCase("tr-TR");
+      return label.includes(q);
+    });
+  }, [query, props.templates]);
+
+  useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      const el = wrapperRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && el.contains(e.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <Input
+        value={selectedLabel || query}
+        placeholder={props.placeholder}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          window.setTimeout(() => setOpen(false), 0);
+        }}
+        disabled={props.disabled}
+        autoComplete="off"
+      />
+
+      {open && !props.disabled ? (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 z-50 mt-1 max-h-56 w-full max-w-full overflow-auto overflow-x-hidden rounded-md border border-border bg-background shadow-sm"
+        >
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              props.onChangeId("");
+              setQuery("");
+              setOpen(false);
+            }}
+          >
+            <span className="block truncate">{props.defaultLabel}</span>
+          </button>
+
+          <div className="h-px w-full bg-border" />
+
+          {options.length ? (
+            options.map((tpl) => (
+              <button
+                key={tpl.id}
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  props.onChangeId(tpl.id);
+                  setQuery(`${tpl.name} (${tpl.language})`);
+                  setOpen(false);
+                }}
+              >
+                <span className="block truncate">{tpl.name}</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {tpl.language}
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-muted-foreground">
+              No results
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function RequesterTypeCombobox(props: {
+  value: RequesterType;
+  onChange: (next: RequesterType) => void;
+  disabled?: boolean;
+  required?: boolean;
+  labelDirect: string;
+  labelCompany: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      const el = wrapperRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && el.contains(e.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
+
+  const label =
+    props.value === "company" ? props.labelCompany : props.labelDirect;
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <Input
+        value={label}
+        readOnly
+        disabled={props.disabled}
+        required={props.required}
+        onClick={() => {
+          if (!props.disabled) setOpen((v) => !v);
+        }}
+        onFocus={() => {
+          if (!props.disabled) setOpen(true);
+        }}
+      />
+
+      {open && !props.disabled ? (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 z-50 mt-1 w-full max-w-full overflow-hidden rounded-md border border-border bg-background shadow-sm"
+        >
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              props.onChange("direct");
+              setOpen(false);
+            }}
+          >
+            <span className="block truncate">{props.labelDirect}</span>
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              props.onChange("company");
+              setOpen(false);
+            }}
+          >
+            <span className="block truncate">{props.labelCompany}</span>
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function getCoreDocumentVariableDefs(
   t: (key: string) => string
@@ -226,19 +537,6 @@ function Section({
   );
 }
 
-function SelectNative(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  const { className, ...rest } = props;
-  return (
-    <select
-      className={cn(
-        "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-        className
-      )}
-      {...rest}
-    />
-  );
-}
-
 export default function NewDocumentPage() {
   const t = useTranslations("documents.new");
   const locale = useLocale();
@@ -265,10 +563,19 @@ export default function NewDocumentPage() {
     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
   }, []);
 
+  const defaultIssueDate = useMemo(() => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }, []);
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
@@ -290,6 +597,7 @@ export default function NewDocumentPage() {
   });
 
   const requesterType = useWatch({ control, name: "requester_type" });
+  const universityName = useWatch({ control, name: "university_name" });
 
   useEffect(() => {
     let cancelled = false;
@@ -379,6 +687,8 @@ export default function NewDocumentPage() {
         }
         if (v.key === "footer_datetime") {
           nextValues[v.key] = defaultFooterDatetimeLocal;
+        } else if (v.key === "issue_date") {
+          nextValues[v.key] = defaultIssueDate;
         } else if (v.key === "requester_type") {
           nextValues[v.key] = "direct";
         } else if (v.key === "price_currency") {
@@ -395,7 +705,7 @@ export default function NewDocumentPage() {
     return () => {
       cancelled = true;
     };
-  }, [templateId, defaultFooterDatetimeLocal, t]);
+  }, [templateId, defaultFooterDatetimeLocal, defaultIssueDate, t]);
 
   const onSubmitDefault = handleSubmit(async (values) => {
     setError(null);
@@ -588,7 +898,7 @@ export default function NewDocumentPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto w-full max-w-3xl space-y-4">
       <div>
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
@@ -599,17 +909,13 @@ export default function NewDocumentPage() {
           <span className="text-sm text-muted-foreground">
             {t("fields.template")}
           </span>
-          <SelectNative
-            value={templateId}
-            onChange={(e) => setTemplateId(e.target.value)}
-          >
-            <option value="">{t("fields.templateDefault")}</option>
-            {templates.map((tpl) => (
-              <option key={tpl.id} value={tpl.id}>
-                {tpl.name} ({tpl.language})
-              </option>
-            ))}
-          </SelectNative>
+          <TemplateCombobox
+            templates={templates}
+            valueId={templateId}
+            onChangeId={setTemplateId}
+            placeholder={t("fields.template")}
+            defaultLabel={t("fields.templateDefault")}
+          />
         </label>
       </Section>
 
@@ -617,7 +923,7 @@ export default function NewDocumentPage() {
         <form onSubmit={onSubmitDynamic} className="space-y-4">
           <Section title={templateDetails.name}>
             {dynamicVariableDefs
-              .filter((v) => !shouldHideKey(v.key))
+              .filter((v) => !shouldHideKey(v.key) && !hasPresetValue(v))
               .map((v) => {
                 const value = templateValues[v.key];
 
@@ -628,23 +934,17 @@ export default function NewDocumentPage() {
                       <span className="text-sm text-muted-foreground">
                         {getTranslatedLabel(v, locale)}
                       </span>
-                      <SelectNative
-                        value={String(value ?? "direct")}
-                        disabled={locked}
-                        onChange={(e) =>
-                          setTemplateValue(
-                            v.key,
-                            e.target.value as RequesterType
-                          )
+                      <RequesterTypeCombobox
+                        value={
+                          (String(value ?? "direct") as RequesterType) ??
+                          "direct"
                         }
-                      >
-                        <option value="direct">
-                          {t("fields.requesterDirect")}
-                        </option>
-                        <option value="company">
-                          {t("fields.requesterCompany")}
-                        </option>
-                      </SelectNative>
+                        disabled={locked}
+                        required
+                        labelDirect={t("fields.requesterDirect")}
+                        labelCompany={t("fields.requesterCompany")}
+                        onChange={(next) => setTemplateValue(v.key, next)}
+                      />
                     </label>
                   );
                 }
@@ -668,6 +968,22 @@ export default function NewDocumentPage() {
                     requesterTypeDynamic === "direct");
 
                 const locked = hasPresetValue(v);
+
+                if (v.key === "university_name") {
+                  return (
+                    <label key={v.key} className="grid gap-1">
+                      <span className="text-sm text-muted-foreground">
+                        {getTranslatedLabel(v, locale)}
+                      </span>
+                      <UniversityCombobox
+                        value={String(value ?? "")}
+                        disabled={locked}
+                        required={isRequired}
+                        onChange={(next) => setTemplateValue(v.key, next)}
+                      />
+                    </label>
+                  );
+                }
 
                 return (
                   <label key={v.key} className="grid gap-1">
@@ -743,7 +1059,17 @@ export default function NewDocumentPage() {
               <span className="text-sm text-muted-foreground">
                 {t("fields.university")}
               </span>
-              <Input {...register("university_name", { required: true })} />
+              <UniversityCombobox
+                value={String(universityName ?? "")}
+                required
+                onChange={(next) =>
+                  setValue("university_name", next, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
             </label>
             <label className="grid gap-1">
               <span className="text-sm text-muted-foreground">
@@ -784,10 +1110,19 @@ export default function NewDocumentPage() {
               <span className="text-sm text-muted-foreground">
                 {t("fields.requesterType")}
               </span>
-              <SelectNative {...register("requester_type", { required: true })}>
-                <option value="direct">{t("fields.requesterDirect")}</option>
-                <option value="company">{t("fields.requesterCompany")}</option>
-              </SelectNative>
+              <RequesterTypeCombobox
+                value={(requesterType as RequesterType) ?? "direct"}
+                required
+                labelDirect={t("fields.requesterDirect")}
+                labelCompany={t("fields.requesterCompany")}
+                onChange={(next) =>
+                  setValue("requester_type", next, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
             </label>
 
             {requesterType === "company" ? (

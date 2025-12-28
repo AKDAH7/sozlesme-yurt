@@ -381,3 +381,50 @@ export async function setTemplateActive(params: {
     [params.templateId, params.isActive]
   );
 }
+
+export async function deleteTemplate(params: {
+  templateId: string;
+}): Promise<void> {
+  const pool = getPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const usage = await client.query<{ c: string }>(
+      `SELECT COUNT(*)::text as c
+       FROM documents
+       WHERE template_id = $1`,
+      [params.templateId]
+    );
+
+    const usedCount = Number(usage.rows[0]?.c ?? "0");
+    if (usedCount > 0) {
+      const err = new Error("Template is used by documents");
+      (err as { status?: number }).status = 409;
+      throw err;
+    }
+
+    await client.query(`DELETE FROM template_versions WHERE template_id = $1`, [
+      params.templateId,
+    ]);
+
+    const fam = await client.query(
+      `DELETE FROM template_families WHERE id = $1`,
+      [params.templateId]
+    );
+
+    if (fam.rowCount === 0) {
+      const err = new Error("Not found");
+      (err as { status?: number }).status = 404;
+      throw err;
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw err;
+  } finally {
+    client.release();
+  }
+}

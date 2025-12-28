@@ -41,6 +41,24 @@ function replacePlaceholders(params: {
   });
 }
 
+function applyCommonAliasValues(values: Record<string, unknown>): void {
+  // Align with common alias keys used in templates and in the new-document flow.
+  // Intentionally overwrites, so edited document fields always win.
+  values.full_name = values.owner_full_name ?? "";
+  values.identity_no = values.owner_identity_no ?? "";
+  values.birth_date = values.owner_birth_date ?? "";
+  values.university = values.university_name ?? "";
+  values.accommodation = values.dorm_name ?? "";
+  values.address = values.dorm_address ?? "";
+  values.amount = values.price_amount ?? "";
+  values.currency = values.price_currency ?? "";
+  values.companyId = values.company_id ?? "";
+  values.customer_name = values.direct_customer_name ?? "";
+  values.customer_phone = values.direct_customer_phone ?? "";
+  values.footerDateTime = values.footer_datetime ?? "";
+  values.requesterType = values.requester_type ?? "";
+}
+
 function getRequestMeta(request: Request): {
   ipAddress: string | null;
   userAgent: string | null;
@@ -137,6 +155,12 @@ export async function POST(
         dorm_address: doc.dorm_address ?? "",
         issue_date: doc.issue_date,
         footer_datetime: new Date(doc.footer_datetime).toLocaleString(),
+        requester_type: doc.requester_type,
+        company_id: doc.company_id,
+        direct_customer_name: doc.direct_customer_name ?? "",
+        direct_customer_phone: doc.direct_customer_phone ?? "",
+        price_amount: doc.price_amount,
+        price_currency: doc.price_currency,
         requester_label: requesterLabel,
         price_label: priceLabel,
         verification_url: verificationUrl,
@@ -149,11 +173,16 @@ export async function POST(
         barcode_data_url: barcodeDataUrl,
       };
 
+      // Important: template_values may contain copies of core fields (owner_full_name, etc.).
+      // When a document is edited, those template_values can become stale.
+      // Merge order ensures the latest DB document fields always win.
       const merged: Record<string, unknown> = {
-        ...baseValues,
         ...(doc.template_values ?? {}),
+        ...baseValues,
         ...systemValues,
       };
+
+      applyCommonAliasValues(merged);
 
       const values: Record<string, string> = {};
       for (const [k, v] of Object.entries(merged)) {

@@ -40,6 +40,9 @@ export default async function DocumentDetailsPage({
             hasPdf={Boolean(doc.pdf_url && doc.pdf_hash)}
           />
           <Button asChild variant="secondary">
+            <Link href={`/documents/${doc.id}/edit`}>{t("actions.edit")}</Link>
+          </Button>
+          <Button asChild variant="secondary">
             <Link href="/documents">{t("back")}</Link>
           </Button>
         </div>

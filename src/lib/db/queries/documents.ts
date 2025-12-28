@@ -83,8 +83,10 @@ export type DocumentPdfData = {
   issue_date: string;
   footer_datetime: string;
   requester_type: RequesterType;
+  company_id: string | null;
   company_name: string | null;
   direct_customer_name: string | null;
+  direct_customer_phone: string | null;
   price_amount: string;
   price_currency: string;
   pdf_storage_type: PdfStorageType;
@@ -364,8 +366,10 @@ export async function getDocumentPdfData(
       d.issue_date::text as issue_date,
       d.footer_datetime::text as footer_datetime,
       d.requester_type,
+      d.company_id,
       c.company_name,
       d.direct_customer_name,
+      d.direct_customer_phone,
       d.price_amount::text as price_amount,
       d.price_currency,
       d.pdf_storage_type,
@@ -592,6 +596,137 @@ export async function updateDocumentStatus(params: {
 
     await client.query("COMMIT");
     return row;
+  } catch (err) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateDocumentDetails(params: {
+  documentId: string;
+  input: {
+    ownerFullName: string;
+    ownerIdentityNo: string;
+    ownerBirthDate: Date;
+    universityName: string;
+    dormName: string | null;
+    dormAddress: string | null;
+    issueDate: Date;
+    footerDatetime: Date;
+    requesterType: RequesterType;
+    companyId: string | null;
+    directCustomerName: string | null;
+    directCustomerPhone: string | null;
+    priceAmount: number;
+    priceCurrency: string;
+    templateId: string | null;
+    templateVersion: number | null;
+    templateValues: Record<string, unknown> | null;
+  };
+  audit: {
+    actionByUserId: string;
+    ipAddress: string | null;
+    userAgent: string | null;
+    detailsJson?: Record<string, unknown>;
+  };
+}): Promise<void> {
+  const pool = getPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const current = await client.query<{ id: string }>(
+      `SELECT id
+       FROM documents
+       WHERE id = $1
+       FOR UPDATE`,
+      [params.documentId]
+    );
+    if (!current.rows[0]) {
+      throw Object.assign(new Error("Not found"), { status: 404 });
+    }
+
+    await client.query(
+      `UPDATE documents
+       SET
+         owner_full_name = $2,
+         owner_identity_no = $3,
+         owner_birth_date = $4,
+         university_name = $5,
+         dorm_name = $6,
+         dorm_address = $7,
+         issue_date = $8,
+         footer_datetime = $9,
+         requester_type = $10,
+         company_id = $11,
+         direct_customer_name = $12,
+         direct_customer_phone = $13,
+         price_amount = $14,
+         price_currency = $15,
+         template_id = $16,
+         template_version = $17,
+         template_values = $18::jsonb,
+         pdf_url = NULL,
+         pdf_hash = NULL
+       WHERE id = $1`,
+      [
+        params.documentId,
+        params.input.ownerFullName,
+        params.input.ownerIdentityNo,
+        params.input.ownerBirthDate,
+        params.input.universityName,
+        params.input.dormName,
+        params.input.dormAddress,
+        params.input.issueDate,
+        params.input.footerDatetime,
+        params.input.requesterType,
+        params.input.companyId,
+        params.input.directCustomerName,
+        params.input.directCustomerPhone,
+        params.input.priceAmount,
+        params.input.priceCurrency,
+        params.input.templateId,
+        params.input.templateVersion,
+        params.input.templateValues
+          ? JSON.stringify(params.input.templateValues)
+          : null,
+      ]
+    );
+
+    await insertDocumentAuditLog(
+      {
+        documentId: params.documentId,
+        actionType: "update" satisfies AuditActionType,
+        actionByUserId: params.audit.actionByUserId,
+        ipAddress: params.audit.ipAddress,
+        userAgent: params.audit.userAgent,
+        detailsJson: {
+          ...(params.audit.detailsJson ?? {}),
+          owner_full_name: params.input.ownerFullName,
+          owner_identity_no: params.input.ownerIdentityNo,
+          owner_birth_date: params.input.ownerBirthDate.toISOString(),
+          university_name: params.input.universityName,
+          dorm_name: params.input.dormName,
+          dorm_address: params.input.dormAddress,
+          issue_date: params.input.issueDate.toISOString(),
+          footer_datetime: params.input.footerDatetime.toISOString(),
+          requester_type: params.input.requesterType,
+          company_id: params.input.companyId,
+          direct_customer_name: params.input.directCustomerName,
+          direct_customer_phone: params.input.directCustomerPhone,
+          price_amount: params.input.priceAmount,
+          price_currency: params.input.priceCurrency,
+          template_id: params.input.templateId,
+          template_version: params.input.templateVersion,
+        },
+      },
+      client
+    );
+
+    await client.query("COMMIT");
   } catch (err) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw err;

@@ -54,26 +54,34 @@ export async function getReportsSummary(params: {
     paid_count: string;
   }>(
     `WITH docs AS (
-			SELECT d.id, d.price_amount, d.payment_status
-			FROM documents d
+      SELECT d.id, d.price_amount, d.payment_status
+      FROM documents d
       WHERE ($1::date IS NULL OR d.issue_date >= $1::date)
         AND ($2::date IS NULL OR d.issue_date <= $2::date)
         AND ($3::uuid IS NULL OR d.company_id = $3::uuid)
-		),
-		pay AS (
-			SELECT COALESCE(SUM(p.received_amount), 0) AS collected
-			FROM payments p
-			JOIN docs ON docs.id = p.document_id
-		)
-		SELECT
-			COUNT(*)::text AS total_documents,
-			COALESCE(SUM(docs.price_amount), 0)::text AS total_sales,
-			(SELECT collected::text FROM pay) AS total_collected,
-			(COALESCE(SUM(docs.price_amount), 0) - (SELECT collected FROM pay))::text AS remaining,
-			COALESCE(SUM(CASE WHEN docs.payment_status = 'unpaid' THEN 1 ELSE 0 END), 0)::text AS unpaid_count,
-			COALESCE(SUM(CASE WHEN docs.payment_status = 'partial' THEN 1 ELSE 0 END), 0)::text AS partial_count,
-			COALESCE(SUM(CASE WHEN docs.payment_status = 'paid' THEN 1 ELSE 0 END), 0)::text AS paid_count
-		FROM docs`,
+    ),
+    paid AS (
+      SELECT p.document_id, COALESCE(SUM(p.received_amount), 0) AS paid_amount
+      FROM payments p
+      JOIN docs ON docs.id = p.document_id
+      GROUP BY p.document_id
+    )
+    SELECT
+      COUNT(*)::text AS total_documents,
+      COALESCE(SUM(docs.price_amount), 0)::text AS total_sales,
+      COALESCE(
+        SUM(LEAST(COALESCE(paid.paid_amount, 0), docs.price_amount)),
+        0
+      )::text AS total_collected,
+      COALESCE(
+        SUM(GREATEST(docs.price_amount - COALESCE(paid.paid_amount, 0), 0)),
+        0
+      )::text AS remaining,
+      COALESCE(SUM(CASE WHEN docs.payment_status = 'unpaid' THEN 1 ELSE 0 END), 0)::text AS unpaid_count,
+      COALESCE(SUM(CASE WHEN docs.payment_status = 'partial' THEN 1 ELSE 0 END), 0)::text AS partial_count,
+      COALESCE(SUM(CASE WHEN docs.payment_status = 'paid' THEN 1 ELSE 0 END), 0)::text AS paid_count
+    FROM docs
+    LEFT JOIN paid ON paid.document_id = docs.id`,
     [params.from, params.to, params.companyId ?? null]
   );
 

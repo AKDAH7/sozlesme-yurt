@@ -68,17 +68,25 @@ export async function getAccountingSummaryForDocuments(params: {
       FROM documents d
       WHERE d.id = ANY($1::uuid[])
     ),
-    pay AS (
-      SELECT COALESCE(SUM(p.received_amount), 0) AS collected
+    paid AS (
+      SELECT p.document_id, COALESCE(SUM(p.received_amount), 0) AS paid_amount
       FROM payments p
       JOIN docs ON docs.id = p.document_id
+      GROUP BY p.document_id
     )
     SELECT
       COUNT(*)::text AS total_documents,
       COALESCE(SUM(docs.price_amount), 0)::text AS total_sales,
-      (SELECT collected::text FROM pay) AS total_collected,
-      (COALESCE(SUM(docs.price_amount), 0) - (SELECT collected FROM pay))::text AS remaining
-    FROM docs`,
+      COALESCE(
+        SUM(LEAST(COALESCE(paid.paid_amount, 0), docs.price_amount)),
+        0
+      )::text AS total_collected,
+      COALESCE(
+        SUM(GREATEST(docs.price_amount - COALESCE(paid.paid_amount, 0), 0)),
+        0
+      )::text AS remaining
+    FROM docs
+    LEFT JOIN paid ON paid.document_id = docs.id`,
     [ids]
   );
 

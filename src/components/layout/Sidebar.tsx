@@ -10,6 +10,7 @@ import {
   FileText,
   LayoutDashboard,
   PenSquare,
+  Receipt,
   ScrollText,
 } from "lucide-react";
 
@@ -37,6 +38,10 @@ const navItems = [
   { href: "/reports", labelKey: "reports", icon: BarChart3 },
   { href: "/templates", labelKey: "templates", icon: FileText },
   { href: "/companies", labelKey: "companies", icon: Building2 },
+] as const;
+
+const accountingItems = [
+  { href: "/accounting", labelKey: "accounting", icon: Receipt },
 ] as const;
 
 export function AppSidebar() {
@@ -80,6 +85,13 @@ export function AppSidebar() {
       );
     }
     return navItems;
+  }, [role]);
+
+  const visibleAccountingItems = useMemo(() => {
+    if (role === "admin" || role === "staff" || role === "accounting") {
+      return accountingItems;
+    }
+    return [] as const;
   }, [role]);
 
   return (
@@ -130,6 +142,32 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {visibleAccountingItems.length ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>{tNav("accountingSystem")}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleAccountingItems.map((item) => {
+                  const isActive =
+                    pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
+
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link href={item.href}>
+                          <item.icon className="size-4" />
+                          <span>{tNav(item.labelKey)}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </SidebarContent>
 
       <SidebarFooter>

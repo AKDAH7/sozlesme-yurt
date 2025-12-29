@@ -71,7 +71,7 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
       <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-xs text-muted-foreground">
+            <tr className="border-b border-border text-start text-xs text-muted-foreground">
               <th className="px-4 py-3">{t("columns.fullName")}</th>
               <th className="px-4 py-3">{t("columns.email")}</th>
               <th className="px-4 py-3">{t("columns.role")}</th>
@@ -90,7 +90,7 @@ export default function UserClientTable(props: { users: UserRowUi[] }) {
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3">
                     <select
-                      className="h-9 rounded-md border border-input bg-transparent px-2"
+                      className="h-9 rounded-md border border-input bg-background px-2 text-foreground [&>option]:bg-background [&>option]:text-foreground"
                       value={u.role}
                       disabled={loadingId === u.id}
                       onChange={(e) =>

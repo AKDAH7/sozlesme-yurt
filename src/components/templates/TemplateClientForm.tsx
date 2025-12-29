@@ -272,7 +272,7 @@ export default function TemplateClientForm(props: {
             {t("fields.language")}
           </div>
           <select
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&>option]:bg-background [&>option]:text-foreground"
             value={values.language}
             onChange={(e) =>
               setValues((v) => ({

@@ -4,29 +4,11 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
-import type {
-  DocStatus,
-  PaymentStatus,
-  RequesterType,
-  TrackingStatus,
-} from "@/types/db";
+import type { DocStatus, RequesterType, TrackingStatus } from "@/types/db";
 import { listDocuments } from "@/lib/db/queries/documents";
 import { listCompaniesMinimal } from "@/lib/db/queries/companies";
-import { CheckCircle2, Circle } from "lucide-react";
 import { requirePermission } from "@/lib/auth/permissions";
-
-function StatusPill({ value }: { value: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs",
-        "bg-muted text-foreground"
-      )}
-    >
-      {value}
-    </span>
-  );
-}
+import { DocumentsTableClient } from "@/components/documents/DocumentsTableClient";
 
 export default async function DocumentsPage({
   searchParams,
@@ -38,6 +20,7 @@ export default async function DocumentsPage({
     status?: string;
     tracking_status?: string;
     payment_status?: string;
+    payment_group?: string;
     requester_type?: string;
     company_id?: string;
     sort?: string;
@@ -69,18 +52,23 @@ export default async function DocumentsPage({
     trackingParam === "created" ||
     trackingParam === "delivered_to_student" ||
     trackingParam === "delivered_to_agent" ||
+    trackingParam === "residence_file_delivered" ||
+    trackingParam === "residence_file_received" ||
     trackingParam === "shipped" ||
     trackingParam === "received" ||
     trackingParam === "cancelled"
       ? (trackingParam as TrackingStatus)
       : "";
 
-  const paymentParam = (sp.payment_status ?? "").trim();
-  const paymentStatus: PaymentStatus | "" =
-    paymentParam === "unpaid" ||
-    paymentParam === "partial" ||
-    paymentParam === "paid"
-      ? (paymentParam as PaymentStatus)
+  const paymentGroupParam = (sp.payment_group ?? "").trim().toLowerCase();
+  const paymentLegacy = (sp.payment_status ?? "").trim().toLowerCase();
+  const paymentGroup: "" | "paid" | "unpaid" =
+    paymentGroupParam === "paid" || paymentGroupParam === "unpaid"
+      ? (paymentGroupParam as "paid" | "unpaid")
+      : paymentLegacy === "paid"
+      ? "paid"
+      : paymentLegacy === "unpaid" || paymentLegacy === "partial"
+      ? "unpaid"
       : "";
 
   const requesterParam = (sp.requester_type ?? "").trim();
@@ -104,7 +92,7 @@ export default async function DocumentsPage({
     q,
     status,
     trackingStatus,
-    paymentStatus,
+    paymentGroup,
     requesterType,
     companyId,
     sortDir,
@@ -119,7 +107,7 @@ export default async function DocumentsPage({
     if (q) params.set("q", q);
     if (status) params.set("status", status);
     if (trackingStatus) params.set("tracking_status", trackingStatus);
-    if (paymentStatus) params.set("payment_status", paymentStatus);
+    if (paymentGroup) params.set("payment_group", paymentGroup);
     if (!isCompanyUser) {
       if (requesterType) params.set("requester_type", requesterType);
       if (companyId) params.set("company_id", companyId);
@@ -169,7 +157,7 @@ export default async function DocumentsPage({
           </div>
           <select
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+              "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
               "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             )}
             name="status"
@@ -187,7 +175,7 @@ export default async function DocumentsPage({
           </div>
           <select
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+              "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
               "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             )}
             name="tracking_status"
@@ -195,6 +183,12 @@ export default async function DocumentsPage({
           >
             <option value="">{t("filters.all")}</option>
             <option value="created">{tStatus("tracking.created")}</option>
+            <option value="residence_file_delivered">
+              {tStatus("tracking.residence_file_delivered")}
+            </option>
+            <option value="residence_file_received">
+              {tStatus("tracking.residence_file_received")}
+            </option>
             <option value="shipped">{tStatus("tracking.shipped")}</option>
             <option value="received">{tStatus("tracking.received")}</option>
             <option value="delivered_to_student">
@@ -213,16 +207,15 @@ export default async function DocumentsPage({
           </div>
           <select
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+              "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
               "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             )}
-            name="payment_status"
-            defaultValue={paymentStatus}
+            name="payment_group"
+            defaultValue={paymentGroup}
           >
             <option value="">{t("filters.all")}</option>
-            <option value="unpaid">{tStatus("payment.unpaid")}</option>
-            <option value="partial">{tStatus("payment.partial")}</option>
             <option value="paid">{tStatus("payment.paid")}</option>
+            <option value="unpaid">{tStatus("payment.unpaid")}</option>
           </select>
         </div>
 
@@ -234,7 +227,7 @@ export default async function DocumentsPage({
               </div>
               <select
                 className={cn(
-                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+                  "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
                   "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 )}
                 name="requester_type"
@@ -252,7 +245,7 @@ export default async function DocumentsPage({
               </div>
               <select
                 className={cn(
-                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+                  "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
                   "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 )}
                 name="company_id"
@@ -275,7 +268,7 @@ export default async function DocumentsPage({
           </div>
           <select
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+              "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
               "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             )}
             name="sort"
@@ -292,7 +285,7 @@ export default async function DocumentsPage({
           </div>
           <select
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors",
+              "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors [&>option]:bg-background [&>option]:text-foreground",
               "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             )}
             name="pageSize"
@@ -309,103 +302,7 @@ export default async function DocumentsPage({
         </div>
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-muted-foreground">
-            <tr className="border-b border-border">
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.pdf")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.creator")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.fileOwner")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.idNumber")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.reference")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.fileStatus")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.tracking")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.price")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.payment")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.companyCustomer")}
-              </th>
-              <th className="px-3 py-2 text-left font-medium">
-                {t("table.created")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-b border-border last:border-0">
-                <td className="px-3 py-2">
-                  {r.pdf_url && r.pdf_hash ? (
-                    <CheckCircle2 className="h-4 w-4 text-foreground" />
-                  ) : (
-                    <Circle className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </td>
-                <td className="px-3 py-2">{r.creator_full_name}</td>
-                <td className="px-3 py-2">
-                  <Link className="hover:underline" href={`/documents/${r.id}`}>
-                    {r.owner_full_name}
-                  </Link>
-                </td>
-                <td className="px-3 py-2 font-mono text-xs">
-                  {r.owner_identity_no}
-                </td>
-                <td className="px-3 py-2 font-mono text-xs">
-                  {r.reference_no}
-                </td>
-                <td className="px-3 py-2">
-                  <StatusPill value={tStatus(`document.${r.doc_status}`)} />
-                </td>
-                <td className="px-3 py-2">
-                  <StatusPill
-                    value={tStatus(`tracking.${r.tracking_status}`)}
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  {r.price_amount} {r.price_currency}
-                </td>
-                <td className="px-3 py-2">
-                  <StatusPill value={tStatus(`payment.${r.payment_status}`)} />
-                </td>
-                <td className="px-3 py-2">
-                  {r.company_name ?? r.direct_customer_name ?? "-"}
-                </td>
-                <td className="px-3 py-2">
-                  {new Date(r.created_at).toLocaleString()}
-                </td>
-              </tr>
-            ))}
-
-            {rows.length === 0 ? (
-              <tr>
-                <td
-                  className="px-3 py-6 text-center text-muted-foreground"
-                  colSpan={11}
-                >
-                  {t("table.empty")}
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+      <DocumentsTableClient rows={rows} />
 
       <div className="flex items-center justify-between">
         <Button asChild variant="secondary" disabled={!canPrev}>

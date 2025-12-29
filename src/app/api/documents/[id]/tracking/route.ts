@@ -27,6 +27,8 @@ function isTrackingStatus(value: unknown): value is TrackingStatus {
     value === "created" ||
     value === "delivered_to_student" ||
     value === "delivered_to_agent" ||
+    value === "residence_file_delivered" ||
+    value === "residence_file_received" ||
     value === "shipped" ||
     value === "received" ||
     value === "cancelled"

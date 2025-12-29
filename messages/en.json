@@ -15,9 +15,85 @@
     "documents": "Documents",
     "newDocument": "New document",
     "reports": "Reports",
+    "accountingSystem": "Accounting System",
+    "accounting": "Accounting",
     "templates": "Templates",
     "companies": "Companies",
     "users": "Users"
+  },
+  "accounting": {
+    "page": {
+      "title": "Accounting",
+      "subtitle": "Calculate totals for selected documents or a company.",
+      "accessDenied": "Access denied.",
+      "filters": {
+        "company": "Company",
+        "allCompanies": "All companies",
+        "payment": "Payment",
+        "all": "All",
+        "from": "From",
+        "to": "To",
+        "pageSize": "Page size",
+        "apply": "Apply"
+      },
+      "pagination": {
+        "prev": "Previous",
+        "next": "Next",
+        "page": "Page {page}"
+      },
+      "actions": {
+        "clearSelection": "Clear selection"
+      },
+      "selection": {
+        "selected": "Selected: {count}",
+        "none": "No selection",
+        "calculating": "Calculating…"
+      },
+      "documents": {
+        "title": "Documents",
+        "showing": "Showing {count}",
+        "loading": "Loading…",
+        "loadFailed": "Failed to load documents.",
+        "selectAll": "Select all",
+        "select": "Select",
+        "empty": "No documents found.",
+        "columns": {
+          "reference": "Reference",
+          "owner": "Owner",
+          "company": "Company/Customer",
+          "payment": "Payment",
+          "price": "Price",
+          "created": "Created"
+        }
+      },
+      "receivePayment": {
+        "title": "Receive payment",
+        "subtitle": "Select one or more documents to receive payments.",
+        "subtitleSelected": "Receiving payment for {referenceNo}.",
+        "subtitleSelectedMany": "Receiving payment for {count} documents.",
+        "currency": "Currency: {currency}",
+        "fields": {
+          "amount": "Amount",
+          "amountPerDocument": "Amount (per document)",
+          "method": "Source / Method",
+          "date": "Payment date",
+          "receiptNo": "Receipt no (optional)",
+          "source": "Source details / note (optional)"
+        },
+        "actions": {
+          "receive": "Receive payment",
+          "receiving": "Receiving…"
+        },
+        "success": "Payment received successfully.",
+        "successBulk": "Payments received. Success: {okCount}, Failed: {failedCount}.",
+        "errors": {
+          "selectAtLeastOne": "Select at least one document.",
+          "mixedCurrencies": "Selected documents have different currencies.",
+          "invalidAmount": "Amount must be greater than 0.",
+          "failed": "Failed to receive payment."
+        }
+      }
+    }
   },
   "actions": {
     "logout": "Logout",
@@ -98,6 +174,8 @@
       "created": "Created",
       "delivered_to_student": "Delivered to student",
       "delivered_to_agent": "Delivered to agent",
+      "residence_file_delivered": "Residence file delivered",
+      "residence_file_received": "Residence file received",
       "shipped": "Shipped",
       "received": "Received",
       "cancelled": "Cancelled"

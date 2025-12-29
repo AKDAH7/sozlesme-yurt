@@ -7,6 +7,8 @@ export type TrackingStatus =
   | "created"
   | "delivered_to_student"
   | "delivered_to_agent"
+  | "residence_file_delivered"
+  | "residence_file_received"
   | "shipped"
   | "received"
   | "cancelled";

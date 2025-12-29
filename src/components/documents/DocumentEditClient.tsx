@@ -389,7 +389,7 @@ export function DocumentEditClient(props: {
               {tNew("fields.requesterType")}
             </div>
             <select
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm [&>option]:bg-background [&>option]:text-foreground"
               value={requesterType}
               onChange={(e) =>
                 setRequesterType(e.target.value as "company" | "direct")

@@ -79,7 +79,7 @@ export default function UserEditClient(props: { user: UserEditClientUser }) {
             {t("fields.role")}
           </div>
           <select
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground [&>option]:bg-background [&>option]:text-foreground"
             value={role}
             disabled={loading}
             onChange={(e) => setRole(e.target.value as UserRole)}
@@ -97,7 +97,7 @@ export default function UserEditClient(props: { user: UserEditClientUser }) {
             {t("fields.status")}
           </div>
           <select
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground [&>option]:bg-background [&>option]:text-foreground"
             value={isActive ? "active" : "inactive"}
             disabled={loading}
             onChange={(e) => setIsActive(e.target.value === "active")}

@@ -15,9 +15,85 @@
     "documents": "Belgeler",
     "newDocument": "Yeni belge",
     "reports": "Raporlar",
+    "accountingSystem": "Muhasebe Sistemi",
+    "accounting": "Muhasebe",
     "templates": "Şablonlar",
     "companies": "Şirketler",
     "users": "Kullanıcılar"
+  },
+  "accounting": {
+    "page": {
+      "title": "Muhasebe",
+      "subtitle": "Seçili belgeler veya bir şirket için toplamları hesaplayın.",
+      "accessDenied": "Erişim reddedildi.",
+      "filters": {
+        "company": "Şirket",
+        "allCompanies": "Tüm şirketler",
+        "payment": "Ödeme",
+        "all": "Tümü",
+        "from": "Başlangıç",
+        "to": "Bitiş",
+        "pageSize": "Sayfa boyutu",
+        "apply": "Uygula"
+      },
+      "pagination": {
+        "prev": "Önceki",
+        "next": "Sonraki",
+        "page": "Sayfa {page}"
+      },
+      "actions": {
+        "clearSelection": "Seçimi temizle"
+      },
+      "selection": {
+        "selected": "Seçili: {count}",
+        "none": "Seçim yok",
+        "calculating": "Hesaplanıyor…"
+      },
+      "documents": {
+        "title": "Belgeler",
+        "showing": "Gösterilen: {count}",
+        "loading": "Yükleniyor…",
+        "loadFailed": "Belgeler yüklenemedi.",
+        "selectAll": "Tümünü seç",
+        "select": "Seç",
+        "empty": "Belge bulunamadı.",
+        "columns": {
+          "reference": "Referans",
+          "owner": "Belge sahibi",
+          "company": "Şirket/Müşteri",
+          "payment": "Ödeme",
+          "price": "Tutar",
+          "created": "Oluşturma"
+        }
+      },
+      "receivePayment": {
+        "title": "Ödeme al",
+        "subtitle": "Ödeme almak için bir veya daha fazla belge seçin.",
+        "subtitleSelected": "{referenceNo} için ödeme alınıyor.",
+        "subtitleSelectedMany": "{count} belge için ödeme alınıyor.",
+        "currency": "Para birimi: {currency}",
+        "fields": {
+          "amount": "Tutar",
+          "amountPerDocument": "Tutar (belge başına)",
+          "method": "Kaynak / Yöntem",
+          "date": "Ödeme tarihi",
+          "receiptNo": "Makbuz no (opsiyonel)",
+          "source": "Kaynak detayları / not (opsiyonel)"
+        },
+        "actions": {
+          "receive": "Ödeme al",
+          "receiving": "Alınıyor…"
+        },
+        "success": "Ödeme başarıyla alındı.",
+        "successBulk": "Ödemeler alındı. Başarılı: {okCount}, Başarısız: {failedCount}.",
+        "errors": {
+          "selectAtLeastOne": "En az bir belge seçin.",
+          "mixedCurrencies": "Seçilen belgelerin para birimleri farklı.",
+          "invalidAmount": "Tutar 0'dan büyük olmalıdır.",
+          "failed": "Ödeme alınamadı."
+        }
+      }
+    }
   },
   "actions": {
     "logout": "Çıkış",
@@ -98,6 +174,8 @@
       "created": "Oluşturuldu",
       "delivered_to_student": "Öğrenciye teslim edildi",
       "delivered_to_agent": "Temsilciye teslim edildi",
+      "residence_file_delivered": "İkamet dosyası teslim edildi",
+      "residence_file_received": "İkamet dosyası teslim alındı",
       "shipped": "Kargoya verildi",
       "received": "Teslim alındı",
       "cancelled": "İptal edildi"

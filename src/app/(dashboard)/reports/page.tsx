@@ -35,7 +35,7 @@ async function TopCompaniesTable(props: {
       <div className="mt-3 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-xs text-muted-foreground">
+            <tr className="border-b border-border text-start text-xs text-muted-foreground">
               <th className="py-2 pr-3">{t("columns.company")}</th>
               <th className="py-2 pr-3">{t("columns.documents")}</th>
               <th className="py-2">{t("columns.sales")}</th>

@@ -235,6 +235,9 @@ export async function GET(request: Request) {
       url.searchParams.get("tracking_status") ?? ""
     ).trim();
     const paymentParam = (url.searchParams.get("payment_status") ?? "").trim();
+    const paymentGroupParam = (url.searchParams.get("payment_group") ?? "")
+      .trim()
+      .toLowerCase();
     const requesterParam = (
       url.searchParams.get("requester_type") ?? ""
     ).trim();
@@ -264,6 +267,15 @@ export async function GET(request: Request) {
         ? (paymentParam as PaymentStatus)
         : "";
 
+    const paymentGroup: "" | "paid" | "unpaid" =
+      paymentGroupParam === "paid" || paymentGroupParam === "unpaid"
+        ? (paymentGroupParam as "paid" | "unpaid")
+        : paymentStatus === "paid"
+        ? "paid"
+        : paymentStatus === "unpaid" || paymentStatus === "partial"
+        ? "unpaid"
+        : "";
+
     const requesterType: RequesterType | "" =
       requesterParam === "company" || requesterParam === "direct"
         ? (requesterParam as RequesterType)
@@ -287,7 +299,7 @@ export async function GET(request: Request) {
       q,
       status,
       trackingStatus,
-      paymentStatus,
+      paymentGroup,
       requesterType,
       companyId: scopedCompanyId,
       sortDir,

@@ -12,7 +12,7 @@ export async function TemplateTable(props: { rows: TemplateListRow[] }) {
     <div className="overflow-x-auto rounded-lg border border-border bg-card">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border text-left text-xs text-muted-foreground">
+          <tr className="border-b border-border text-start text-xs text-muted-foreground">
             <th className="px-4 py-3">{t("table.name")}</th>
             <th className="px-4 py-3">{t("table.language")}</th>
             <th className="px-4 py-3">{t("table.variables")}</th>

@@ -9,6 +9,7 @@ export type Permission =
   | "documents:add_payment"
   | "documents:change_status"
   | "documents:generate_pdf"
+  | "accounting:view"
   | "notifications:read"
   | "templates:manage"
   | "reports:view"
@@ -23,6 +24,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission>> = {
     "documents:add_payment",
     "documents:change_status",
     "documents:generate_pdf",
+    "accounting:view",
     "notifications:read",
     "templates:manage",
     "reports:view",
@@ -35,12 +37,14 @@ const ROLE_PERMISSIONS: Record<UserRole, Set<Permission>> = {
     "documents:update_tracking",
     "documents:add_payment",
     "documents:generate_pdf",
+    "accounting:view",
     "notifications:read",
     "companies:manage",
   ]),
   accounting: new Set([
     "documents:read",
     "documents:add_payment",
+    "accounting:view",
     "notifications:read",
     "reports:view",
   ]),

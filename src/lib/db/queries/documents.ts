@@ -432,8 +432,11 @@ export async function listDocuments(params: {
   status: DocStatus | "";
   trackingStatus?: TrackingStatus | "";
   paymentStatus?: PaymentStatus | "";
+  paymentGroup?: "paid" | "unpaid" | "";
   requesterType?: RequesterType | "";
   companyId?: string | "";
+  from?: string | null;
+  to?: string | null;
   sortDir?: "asc" | "desc";
 }): Promise<{ rows: DocumentListRow[]; total: number }> {
   const pool = getPool();
@@ -451,8 +454,13 @@ export async function listDocuments(params: {
   const status = params.status ?? "";
   const trackingStatus = params.trackingStatus ?? "";
   const paymentStatus = params.paymentStatus ?? "";
+  const paymentGroup = (params.paymentGroup ?? "").trim();
   const requesterType = params.requesterType ?? "";
   const companyId = (params.companyId ?? "").trim();
+  const from = (params.from ?? null)?.trim?.()
+    ? String(params.from).trim()
+    : null;
+  const to = (params.to ?? null)?.trim?.() ? String(params.to).trim() : null;
   const sortDir = params.sortDir === "asc" ? "ASC" : "DESC";
 
   const where: string[] = [];
@@ -472,6 +480,14 @@ export async function listDocuments(params: {
     );
   }
 
+  if (from) {
+    add(`d.issue_date >= $${values.length + 1}::date`, from);
+  }
+
+  if (to) {
+    add(`d.issue_date <= $${values.length + 1}::date`, to);
+  }
+
   if (status) {
     add(`d.doc_status = $${values.length + 1}`, status);
   }
@@ -480,7 +496,11 @@ export async function listDocuments(params: {
     add(`d.tracking_status = $${values.length + 1}`, trackingStatus);
   }
 
-  if (paymentStatus) {
+  if (paymentGroup === "paid") {
+    add(`d.payment_status = 'paid'`);
+  } else if (paymentGroup === "unpaid") {
+    add(`d.payment_status IN ('unpaid', 'partial')`);
+  } else if (paymentStatus) {
     add(`d.payment_status = $${values.length + 1}`, paymentStatus);
   }
 

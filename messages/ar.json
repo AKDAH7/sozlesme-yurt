@@ -52,11 +52,11 @@
       "placeholders": {
         "name": "مثال: خطاب السكن",
         "description": "اختياري",
-        "html": "استخدم placeholders مثل {{owner_full_name}}"
+        "html": "استخدم placeholders مثل '{{owner_full_name}}'"
       },
       "hints": {
-        "variables": "تُستخدم المفاتيح داخل {{key}}.",
-        "systemVariables": "عناصر النظام: {{stamp_data_url}}, {{qr_data_url}}, {{barcode_data_url}}, {{verification_url}}, {{verification_path}}."
+        "variables": "تُستخدم المفاتيح داخل '{{key}}'.",
+        "systemVariables": "عناصر النظام: '{{stamp_data_url}}', '{{qr_data_url}}', '{{barcode_data_url}}', '{{verification_url}}', '{{verification_path}}'."
       },
       "vars": {
         "key": "المفتاح",
@@ -106,9 +106,85 @@
     "documents": "المستندات",
     "newDocument": "مستند جديد",
     "reports": "التقارير",
+    "accountingSystem": "نظام المحاسبة",
+    "accounting": "المحاسبة",
     "templates": "القوالب",
     "companies": "الشركات",
     "users": "المستخدمون"
+  },
+  "accounting": {
+    "page": {
+      "title": "المحاسبة",
+      "subtitle": "احسب الإجماليات للمستندات المحددة أو لشركة معينة.",
+      "accessDenied": "تم رفض الوصول.",
+      "filters": {
+        "company": "الشركة",
+        "allCompanies": "كل الشركات",
+        "payment": "الدفع",
+        "all": "الكل",
+        "from": "من",
+        "to": "إلى",
+        "pageSize": "حجم الصفحة",
+        "apply": "تطبيق"
+      },
+      "pagination": {
+        "prev": "السابق",
+        "next": "التالي",
+        "page": "الصفحة {page}"
+      },
+      "actions": {
+        "clearSelection": "مسح التحديد"
+      },
+      "selection": {
+        "selected": "المحدد: {count}",
+        "none": "لا يوجد تحديد",
+        "calculating": "جارٍ الحساب…"
+      },
+      "documents": {
+        "title": "المستندات",
+        "showing": "المعروض: {count}",
+        "loading": "جارٍ التحميل…",
+        "loadFailed": "تعذر تحميل المستندات.",
+        "selectAll": "تحديد الكل",
+        "select": "تحديد",
+        "empty": "لم يتم العثور على مستندات.",
+        "columns": {
+          "reference": "المرجع",
+          "owner": "صاحب المستند",
+          "company": "الشركة/العميل",
+          "payment": "الدفع",
+          "price": "المبلغ",
+          "created": "تاريخ الإنشاء"
+        }
+      },
+      "receivePayment": {
+        "title": "استلام دفعة",
+        "subtitle": "يرجى تحديد مستند واحد أو أكثر لاستلام الدفعات.",
+        "subtitleSelected": "استلام دفعة للمستند {referenceNo}.",
+        "subtitleSelectedMany": "استلام دفعة لـ {count} مستندات.",
+        "currency": "العملة: {currency}",
+        "fields": {
+          "amount": "المبلغ",
+          "amountPerDocument": "المبلغ (لكل مستند)",
+          "method": "المصدر / الطريقة",
+          "date": "تاريخ الدفع",
+          "receiptNo": "رقم الإيصال (اختياري)",
+          "source": "تفاصيل المصدر / ملاحظة (اختياري)"
+        },
+        "actions": {
+          "receive": "استلام الدفعة",
+          "receiving": "جارٍ الاستلام…"
+        },
+        "success": "تم استلام الدفعة بنجاح.",
+        "successBulk": "تم استلام الدفعات. ناجح: {okCount}، فاشل: {failedCount}.",
+        "errors": {
+          "selectAtLeastOne": "يرجى تحديد مستند واحد على الأقل.",
+          "mixedCurrencies": "المستندات المحددة بعملات مختلفة.",
+          "invalidAmount": "يجب أن يكون المبلغ أكبر من 0.",
+          "failed": "تعذر استلام الدفعة."
+        }
+      }
+    }
   },
   "actions": {
     "logout": "تسجيل الخروج",
@@ -189,6 +265,8 @@
       "created": "تم الإنشاء",
       "delivered_to_student": "تم التسليم للطالب",
       "delivered_to_agent": "تم التسليم للوكيل",
+      "residence_file_delivered": "تم تسليم ملف الإقامة",
+      "residence_file_received": "تم استلام ملف الإقامة",
       "shipped": "تم الشحن",
       "received": "تم الاستلام",
       "cancelled": "ملغي"
@@ -676,7 +754,8 @@
       "accessDenied": "تم رفض الوصول. ليست لديك صلاحية لعرض هذه الصفحة.",
       "filters": {
         "from": "من",
-        "to": "إلى"
+        "to": "إلى",
+        "apply": "تطبيق"
       }
     },
     "paymentsByMethod": {

@@ -115,7 +115,7 @@ export default function UserClientForm() {
       <div>
         <div className="text-xs text-muted-foreground">{t("fields.role")}</div>
         <select
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground [&>option]:bg-background [&>option]:text-foreground"
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
         >

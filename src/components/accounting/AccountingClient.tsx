@@ -212,14 +212,16 @@ export function AccountingClient(props: {
         | { ok: false; error?: string }
         | null;
 
-      if (!ac.signal.aborted && data?.ok === true) {
+      if (ac.signal.aborted) return;
+
+      if (data && data.ok) {
         setDocRows(data.rows ?? []);
         setDocTotal(Number(data.total ?? 0));
         setDocsError(null);
         setSelectedIds(new Set());
-      } else if (!ac.signal.aborted) {
+      } else {
         setDocsError(
-          typeof data?.error === "string"
+          data && !data.ok && typeof data.error === "string"
             ? data.error
             : t("documents.loadFailed")
         );
@@ -331,18 +333,14 @@ export function AccountingClient(props: {
         | null;
 
       if (!res.ok || !data) {
-        setPayError(
-          typeof data?.error === "string"
-            ? data.error
-            : t("receivePayment.errors.failed")
-        );
+        setPayError(t("receivePayment.errors.failed"));
         return;
       }
 
       if (ids.length === 1) {
         if (data.ok !== true) {
           setPayError(
-            typeof data?.error === "string"
+            data && !data.ok && typeof data.error === "string"
               ? data.error
               : t("receivePayment.errors.failed")
           );

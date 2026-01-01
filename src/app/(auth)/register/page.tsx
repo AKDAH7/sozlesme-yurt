@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export default function RegisterPage() {
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+   
   return <RegisterPageContent />;
 }
 

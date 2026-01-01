@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 export default function LoginPage() {
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+   
   return <LoginPageContent />;
 }
 

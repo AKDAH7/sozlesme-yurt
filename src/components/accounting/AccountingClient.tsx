@@ -212,15 +212,15 @@ export function AccountingClient(props: {
         | { ok: false; error?: string }
         | null;
 
-      if (!ac.signal.aborted && data && (data as any).ok === true) {
-        setDocRows((data as any).rows ?? []);
-        setDocTotal(Number((data as any).total ?? 0));
+      if (!ac.signal.aborted && data?.ok === true) {
+        setDocRows(data.rows ?? []);
+        setDocTotal(Number(data.total ?? 0));
         setDocsError(null);
         setSelectedIds(new Set());
       } else if (!ac.signal.aborted) {
         setDocsError(
-          typeof (data as any)?.error === "string"
-            ? (data as any).error
+          typeof data?.error === "string"
+            ? data.error
             : t("documents.loadFailed")
         );
       }
@@ -245,7 +245,7 @@ export function AccountingClient(props: {
   const activeSummary = selectedSummary ?? props.summary;
 
   const toggleAll = () => {
-    setSelectedIds((prev) => {
+    setSelectedIds(() => {
       if (allVisibleSelected) return new Set();
       return new Set(docRows.map((d) => d.id));
     });
@@ -314,7 +314,21 @@ export function AccountingClient(props: {
               }),
             });
 
-      const data = (await res.json().catch(() => null)) as any;
+      const data = (await res.json().catch(() => null)) as
+        | {
+            ok: true;
+            payment_id: string;
+          }
+        | {
+            ok: true;
+            okCount: number;
+            failedCount: number;
+          }
+        | {
+            ok: false;
+            error?: string;
+          }
+        | null;
 
       if (!res.ok || !data) {
         setPayError(
@@ -337,8 +351,9 @@ export function AccountingClient(props: {
         setPaySuccess(t("receivePayment.success"));
         setSelectedIds(new Set());
       } else {
-        const okCount = Number(data?.okCount ?? 0);
-        const failedCount = Number(data?.failedCount ?? 0);
+        const okCount = "okCount" in data ? Number(data.okCount ?? 0) : 0;
+        const failedCount =
+          "failedCount" in data ? Number(data.failedCount ?? 0) : 0;
 
         setPaySuccess(
           t("receivePayment.successBulk", {
@@ -403,7 +418,10 @@ export function AccountingClient(props: {
             value={filterPaymentGroup}
             onChange={(e) => {
               setPage(1);
-              setFilterPaymentGroup(e.target.value as any);
+              const v = e.target.value;
+              setFilterPaymentGroup(
+                v === "paid" || v === "unpaid" || v === "" ? v : ""
+              );
             }}
           >
             <option value="">{t("filters.all")}</option>

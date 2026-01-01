@@ -728,6 +728,8 @@
       "actions": {
         "addVariable": "Add variable",
         "remove": "Remove",
+        "uploadImage": "Upload image",
+        "uploadingImage": "Uploading…",
         "create": "Create",
         "update": "Save (new version)",
         "saving": "Saving…"
@@ -736,6 +738,8 @@
         "nameRequired": "Name is required.",
         "htmlRequired": "HTML content is required.",
         "variablesRequired": "At least one valid variable is required.",
+        "imageRequired": "Please choose an image to upload.",
+        "imageUploadFailed": "Failed to upload image.",
         "saveFailed": "Failed to save template."
       }
     },

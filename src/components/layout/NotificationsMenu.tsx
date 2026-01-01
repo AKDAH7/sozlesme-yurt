@@ -36,7 +36,7 @@ export function NotificationsMenu() {
 
   const panelRef = React.useRef<HTMLDivElement | null>(null);
 
-  async function load() {
+  const load = React.useCallback(async () => {
     setError(null);
     setLoading(true);
     try {
@@ -69,7 +69,7 @@ export function NotificationsMenu() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [tErrors]);
 
   function tryParseJson(value: string | null): Record<string, unknown> | null {
     if (!value) return null;
@@ -141,7 +141,7 @@ export function NotificationsMenu() {
   React.useEffect(() => {
     if (!open) return;
     void load();
-  }, [open]);
+  }, [open, load]);
 
   React.useEffect(() => {
     function onDocMouseDown(e: MouseEvent) {

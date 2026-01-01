@@ -72,6 +72,8 @@
       "actions": {
         "addVariable": "إضافة متغير",
         "remove": "إزالة",
+        "uploadImage": "رفع صورة",
+        "uploadingImage": "جارٍ الرفع…",
         "create": "إنشاء",
         "update": "حفظ (إصدار جديد)",
         "saving": "جارٍ الحفظ…"
@@ -80,6 +82,8 @@
         "nameRequired": "الاسم مطلوب.",
         "htmlRequired": "محتوى HTML مطلوب.",
         "variablesRequired": "مطلوب متغير صالح واحد على الأقل.",
+        "imageRequired": "يرجى اختيار صورة للرفع.",
+        "imageUploadFailed": "تعذر رفع الصورة.",
         "saveFailed": "تعذر حفظ القالب."
       }
     },

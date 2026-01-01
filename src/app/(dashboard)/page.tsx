@@ -7,7 +7,7 @@ import { PendingCompanyRequestActions } from "@/components/dashboard/PendingComp
 
 export default function Home() {
   // This page is a Server Component.
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+   
   return <HomeContent />;
 }
 

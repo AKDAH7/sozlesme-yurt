@@ -35,7 +35,7 @@ export default function VerifyClient(props: { initialToken?: string }) {
   const tActions = useTranslations("actions");
   const tPdfActions = useTranslations("documents.details.pdfActions");
 
-  const [token, setToken] = useState(props.initialToken ?? "");
+  const [token] = useState(props.initialToken ?? "");
   const [referenceNo, setReferenceNo] = useState("");
   const [identityNo, setIdentityNo] = useState("");
 

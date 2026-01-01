@@ -559,6 +559,7 @@ export async function updateDocumentPdfInfo(params: {
   storageType: PdfStorageType;
   pdfUrl: string;
   pdfHash: string;
+  templateVersion?: number;
   userId: string;
   ipAddress: string | null;
   userAgent: string | null;
@@ -568,14 +569,27 @@ export async function updateDocumentPdfInfo(params: {
   try {
     await client.query("BEGIN");
 
+    const hasTemplateVersion =
+      typeof params.templateVersion === "number" &&
+      Number.isFinite(params.templateVersion) &&
+      params.templateVersion > 0;
+
     const updated = await client.query<{ pdf_url: string; pdf_hash: string }>(
       `UPDATE documents
        SET pdf_storage_type = $2,
            pdf_url = $3,
-           pdf_hash = $4
+           pdf_hash = $4,
+           template_version = CASE WHEN $5::boolean THEN $6 ELSE template_version END
        WHERE id = $1
        RETURNING pdf_url, pdf_hash`,
-      [params.documentId, params.storageType, params.pdfUrl, params.pdfHash]
+      [
+        params.documentId,
+        params.storageType,
+        params.pdfUrl,
+        params.pdfHash,
+        hasTemplateVersion,
+        hasTemplateVersion ? params.templateVersion : null,
+      ]
     );
     const row = updated.rows[0];
     if (!row) throw Object.assign(new Error("Not found"), { status: 404 });
@@ -591,6 +605,7 @@ export async function updateDocumentPdfInfo(params: {
           pdf_storage_type: params.storageType,
           pdf_url: params.pdfUrl,
           pdf_hash: params.pdfHash,
+          template_version: hasTemplateVersion ? params.templateVersion : null,
           kind: "pdf_generate",
         },
       },

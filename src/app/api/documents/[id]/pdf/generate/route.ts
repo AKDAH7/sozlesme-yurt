@@ -23,6 +23,109 @@ export const runtime = "nodejs";
 // PDF generation can take longer on serverless.
 export const maxDuration = 60;
 
+function formatDateDdMmYyyy(input: string): string {
+  const s = (input ?? "").trim();
+  if (!s) return "";
+
+  // Handle plain date strings from Postgres (YYYY-MM-DD) without timezone shifts.
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+
+  const d = new Date(s);
+  if (!Number.isFinite(d.getTime())) return s;
+
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = String(d.getFullYear());
+  return `${dd}.${mm}.${yyyy}`;
+}
+
+function contentTypeForImageExt(ext: string): string {
+  switch (ext.toLowerCase()) {
+    case ".png":
+      return "image/png";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".webp":
+      return "image/webp";
+    case ".gif":
+      return "image/gif";
+    case ".svg":
+      return "image/svg+xml";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+async function inlineUploadedTemplateImages(params: {
+  html: string;
+  origin: string;
+}): Promise<string> {
+  // Puppeteer renders HTML from about:blank; root-relative URLs like `/api/...`
+  // won't resolve. Also, server-side rendering won't have the user's cookies.
+  // Inlining these specific images as data URLs makes PDF rendering reliable.
+  const uploadDir = path.join(process.cwd(), "storage", "uploads", "templates");
+
+  const srcRe = /\bsrc=("|')([^"']+)("|')/gi;
+  const matches = Array.from(params.html.matchAll(srcRe));
+  if (!matches.length) return params.html;
+
+  const replacements = new Map<string, string>();
+
+  for (const m of matches) {
+    const quote1 = m[1] ?? '"';
+    const rawSrc = m[2] ?? "";
+    const quote2 = m[3] ?? quote1;
+
+    if (!rawSrc) continue;
+    if (rawSrc.startsWith("data:")) continue;
+
+    let url: URL;
+    try {
+      url = new URL(rawSrc, params.origin);
+    } catch {
+      continue;
+    }
+
+    // Match both relative and absolute references to our upload endpoint.
+    if (!url.pathname.startsWith("/api/uploads/templates/")) continue;
+
+    const key = decodeURIComponent(
+      url.pathname.replace("/api/uploads/templates/", "")
+    ).trim();
+    if (!key) continue;
+    if (key.includes("..") || key.includes("/") || key.includes("\\")) continue;
+
+    if (replacements.has(rawSrc)) continue;
+
+    try {
+      const filePath = path.join(uploadDir, key);
+      const bytes = await fs.readFile(filePath);
+      const ct = contentTypeForImageExt(path.extname(key));
+      const dataUrl = `data:${ct};base64,${bytes.toString("base64")}`;
+      replacements.set(rawSrc, `src=${quote1}${dataUrl}${quote2}`);
+    } catch {
+      // If missing/unreadable, keep original src; PDF will fall back to alt.
+    }
+  }
+
+  if (!replacements.size) return params.html;
+
+  // Replace only attribute values, preserving the rest of the HTML.
+  let out = params.html;
+  for (const [rawSrc, replacementAttr] of replacements.entries()) {
+    out = out.replaceAll(
+      new RegExp(
+        `\\bsrc=("|')${rawSrc.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}("|')`,
+        "g"
+      ),
+      replacementAttr
+    );
+  }
+  return out;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -126,11 +229,11 @@ export async function POST(
     const priceLabel = `${doc.price_amount} ${doc.price_currency}`;
 
     let html: string;
+    let templateVersionUsed: number | undefined;
 
-    if (doc.template_id && doc.template_version && doc.template_values) {
+    if (doc.template_id) {
       const tpl = await getTemplateDetails({
         templateId: doc.template_id,
-        version: doc.template_version,
       });
 
       if (!tpl) {
@@ -144,18 +247,20 @@ export async function POST(
         );
       }
 
+      templateVersionUsed = tpl.latest_version;
+
       const baseValues: Record<string, unknown> = {
         reference_no: doc.reference_no,
         barcode_id: doc.barcode_id,
         token: doc.token,
         owner_full_name: doc.owner_full_name,
         owner_identity_no: doc.owner_identity_no,
-        owner_birth_date: doc.owner_birth_date,
+        owner_birth_date: formatDateDdMmYyyy(doc.owner_birth_date),
         university_name: doc.university_name,
         dorm_name: doc.dorm_name ?? "",
         dorm_address: doc.dorm_address ?? "",
-        issue_date: doc.issue_date,
-        footer_datetime: new Date(doc.footer_datetime).toLocaleString(),
+        issue_date: formatDateDdMmYyyy(doc.issue_date),
+        footer_datetime: formatDateDdMmYyyy(doc.footer_datetime),
         requester_type: doc.requester_type,
         company_id: doc.company_id,
         direct_customer_name: doc.direct_customer_name ?? "",
@@ -202,12 +307,12 @@ export async function POST(
           barcodeId: doc.barcode_id,
           ownerFullName: doc.owner_full_name,
           ownerIdentityNo: doc.owner_identity_no,
-          ownerBirthDate: doc.owner_birth_date,
+          ownerBirthDate: formatDateDdMmYyyy(doc.owner_birth_date),
           universityName: doc.university_name,
           dormName: doc.dorm_name,
           dormAddress: doc.dorm_address,
-          issueDate: doc.issue_date,
-          footerDatetime: new Date(doc.footer_datetime).toLocaleString(),
+          issueDate: formatDateDdMmYyyy(doc.issue_date),
+          footerDatetime: formatDateDdMmYyyy(doc.footer_datetime),
           requesterLabel,
           priceLabel,
           verificationUrl,
@@ -217,6 +322,8 @@ export async function POST(
           stampDataUrl,
         });
     }
+
+    html = await inlineUploadedTemplateImages({ html, origin });
 
     const pdfBuffer = await renderHtmlToPdfBuffer({ html });
     const pdfHash = sha256Hex(pdfBuffer);
@@ -238,6 +345,7 @@ export async function POST(
       storageType: isVercel ? "db" : "local",
       pdfUrl,
       pdfHash,
+      templateVersion: templateVersionUsed,
       userId,
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,

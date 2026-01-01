@@ -10,7 +10,7 @@ import "./globals.css";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   // Note: this is a Server Component; locale/messages come from next-intl request config.
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+   
   return <LocaleLayout>{children}</LocaleLayout>;
 }
 

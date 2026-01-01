@@ -728,6 +728,8 @@
       "actions": {
         "addVariable": "Değişken ekle",
         "remove": "Sil",
+        "uploadImage": "Resim yükle",
+        "uploadingImage": "Yükleniyor…",
         "create": "Oluştur",
         "update": "Kaydet (yeni versiyon)",
         "saving": "Kaydediliyor…"
@@ -736,6 +738,8 @@
         "nameRequired": "Ad zorunludur.",
         "htmlRequired": "HTML içeriği zorunludur.",
         "variablesRequired": "En az 1 geçerli değişken zorunludur.",
+        "imageRequired": "Lütfen yüklenecek bir resim seçin.",
+        "imageUploadFailed": "Resim yüklenemedi.",
         "saveFailed": "Şablon kaydedilemedi."
       }
     },

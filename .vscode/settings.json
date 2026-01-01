@@ -2,6 +2,9 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "peacock.color": "#1e3a8a",
   "peacock.remoteColor": "#1e3a8a",
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore",
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#2563eb",
     "activityBar.background": "#2563eb",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { TemplateLanguage, TemplateVariableType } from "@/types/db";
@@ -31,6 +31,34 @@ export type TemplateFormValues = {
   variables_definition: TemplateVariableFormRow[];
 };
 
+function parseLabelI18nFromRow(
+  r: Record<string, unknown>
+): { tr?: string; en?: string; ar?: string } | undefined {
+  const liRaw = r.label_i18n;
+  if (liRaw && typeof liRaw === "object") {
+    const li = liRaw as Record<string, unknown>;
+    const tr = typeof li.tr === "string" ? li.tr.trim() : "";
+    const en = typeof li.en === "string" ? li.en.trim() : "";
+    const ar = typeof li.ar === "string" ? li.ar.trim() : "";
+
+    const outLi: { tr?: string; en?: string; ar?: string } = {};
+    if (tr) outLi.tr = tr;
+    if (en) outLi.en = en;
+    if (ar) outLi.ar = ar;
+    return Object.keys(outLi).length ? outLi : undefined;
+  }
+
+  // Backward/alternate shape: TemplateVariableFormRow coming from the edit page.
+  const trAlt = typeof r.label_tr === "string" ? r.label_tr.trim() : "";
+  const enAlt = typeof r.label_en === "string" ? r.label_en.trim() : "";
+  const arAlt = typeof r.label_ar === "string" ? r.label_ar.trim() : "";
+  const outAlt: { tr?: string; en?: string; ar?: string } = {};
+  if (trAlt) outAlt.tr = trAlt;
+  if (enAlt) outAlt.en = enAlt;
+  if (arAlt) outAlt.ar = arAlt;
+  return Object.keys(outAlt).length ? outAlt : undefined;
+}
+
 function normalizeKey(k: string): string {
   return k.trim();
 }
@@ -47,30 +75,21 @@ export default function TemplateClientForm(props: {
 }) {
   const t = useTranslations("templates.form");
 
+  const htmlTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageInputKey, setImageInputKey] = useState(0);
+
   const initialVariables = useMemo<TemplateVariableFormRow[]>(() => {
     const raw = props.initialValues?.variables_definition;
     const parsed: TemplateVariableDefinitionLike[] = Array.isArray(raw)
       ? raw.map((r) => ({
           key: String(r.key ?? ""),
           label: String(r.label ?? ""),
-          label_i18n: (() => {
-            const rRec = r as unknown as Record<string, unknown>;
-            const liRaw = rRec.label_i18n;
-            const li =
-              liRaw && typeof liRaw === "object"
-                ? (liRaw as Record<string, unknown>)
-                : null;
-
-            const tr = typeof li?.tr === "string" ? li.tr.trim() : "";
-            const en = typeof li?.en === "string" ? li.en.trim() : "";
-            const ar = typeof li?.ar === "string" ? li.ar.trim() : "";
-
-            const outLi: { tr?: string; en?: string; ar?: string } = {};
-            if (tr) outLi.tr = tr;
-            if (en) outLi.en = en;
-            if (ar) outLi.ar = ar;
-            return Object.keys(outLi).length ? outLi : undefined;
-          })(),
+          label_i18n: parseLabelI18nFromRow(
+            r as unknown as Record<string, unknown>
+          ),
           preset_value: (() => {
             const presetRaw = (r as unknown as Record<string, unknown>)
               .preset_value;
@@ -113,6 +132,74 @@ export default function TemplateClientForm(props: {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function insertIntoHtmlAtCursor(snippet: string) {
+    const el = htmlTextareaRef.current;
+    if (!el) {
+      setValues((v) => ({ ...v, html_content: v.html_content + snippet }));
+      return;
+    }
+
+    const start = el.selectionStart ?? vSafeIndex(values.html_content.length);
+    const end = el.selectionEnd ?? start;
+    const before = values.html_content.slice(0, start);
+    const after = values.html_content.slice(end);
+    const next = before + snippet + after;
+
+    setValues((v) => ({ ...v, html_content: next }));
+
+    queueMicrotask(() => {
+      try {
+        el.focus();
+        const caret = start + snippet.length;
+        el.setSelectionRange(caret, caret);
+      } catch {
+        // ignore
+      }
+    });
+  }
+
+  function vSafeIndex(n: number): number {
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }
+
+  async function uploadAndInsertImage() {
+    setError(null);
+    if (!selectedImage) {
+      setError(t("errors.imageRequired"));
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", selectedImage);
+
+      const res = await fetch("/api/uploads/templates", {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        url?: string;
+        error?: string;
+      } | null;
+
+      if (!res.ok || !data?.ok || !data.url) {
+        setError(data?.error ?? t("errors.imageUploadFailed"));
+        return;
+      }
+
+      insertIntoHtmlAtCursor(`\n<img src="${data.url}" alt="" />\n`);
+      setSelectedImage(null);
+      setImageInputKey((k) => k + 1);
+    } catch {
+      setError(t("errors.imageUploadFailed"));
+    } finally {
+      setUploadingImage(false);
+    }
+  }
 
   function addVariable() {
     setValues((v) => ({
@@ -304,12 +391,32 @@ export default function TemplateClientForm(props: {
         <div className="text-xs text-muted-foreground">{t("fields.html")}</div>
         <textarea
           className="min-h-55 w-full rounded-md border border-input bg-transparent p-3 font-mono text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          ref={htmlTextareaRef}
           value={values.html_content}
           onChange={(e) =>
             setValues((v) => ({ ...v, html_content: e.target.value }))
           }
           placeholder={t("placeholders.html")}
         />
+
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <Input
+            key={imageInputKey}
+            type="file"
+            accept="image/*"
+            onChange={(e) => setSelectedImage(e.target.files?.[0] ?? null)}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={uploadingImage}
+            onClick={uploadAndInsertImage}
+          >
+            {uploadingImage
+              ? t("actions.uploadingImage")
+              : t("actions.uploadImage")}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2">

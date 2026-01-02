@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
@@ -33,7 +33,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
   const tVerify = useTranslations("verify");
   const tStatus = useTranslations("status");
   const tActions = useTranslations("actions");
-  const tPdfActions = useTranslations("documents.details.pdfActions");
 
   const [token] = useState(props.initialToken ?? "");
   const [referenceNo, setReferenceNo] = useState("");
@@ -77,16 +76,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
       cancelled = true;
     };
   }, [props.initialToken]);
-
-  const pdfUrls = useMemo(() => {
-    if (!result) return null;
-    const base = `/api/documents/${encodeURIComponent(
-      result.result.documentId
-    )}/pdf/public?session=${encodeURIComponent(result.verifySession.token)}`;
-    return {
-      download: `${base}&download=1`,
-    };
-  }, [result]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -209,16 +198,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
               </span>
             </div>
           </div>
-
-          {result.result.pdfReady && pdfUrls ? (
-            <div className="mt-4 flex gap-2">
-              <Button asChild variant="secondary" className="flex-1">
-                <a href={pdfUrls.download} rel="noreferrer">
-                  {tPdfActions("downloadPdf")}
-                </a>
-              </Button>
-            </div>
-          ) : null}
         </div>
       ) : null}
     </main>

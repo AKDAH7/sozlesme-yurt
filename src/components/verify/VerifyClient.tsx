@@ -177,7 +177,16 @@ export default function VerifyClient(props: { initialToken?: string }) {
               <span className="text-muted-foreground">
                 {tVerify("result.fullName")}
               </span>
-              <span className="font-medium">{result.result.ownerFullName}</span>
+              <span className="flex flex-col items-end text-right">
+                <span className="font-medium">
+                  {result.result.ownerFullName}
+                </span>
+                {identityNo ? (
+                  <span className="text-xs text-muted-foreground">
+                    {identityNo}
+                  </span>
+                ) : null}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">
@@ -185,16 +194,6 @@ export default function VerifyClient(props: { initialToken?: string }) {
               </span>
               <span className="font-medium">
                 {result.result.universityName}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">
-                {tVerify("result.pdf")}
-              </span>
-              <span className="font-medium">
-                {result.result.pdfReady
-                  ? tStatus("pdf.ready")
-                  : tStatus("pdf.notReady")}
               </span>
             </div>
           </div>
